@@ -5,7 +5,7 @@ import (
 )
 
 var Root = &cobra.Command{
-	Use:     "marauderctl",
+	Use: "marauderctl",
 	Version: Version,
-	Short:   "The CLI backend for Marauder Launcher",
+	Short: "The CLI backend for Marauder Launcher",
 }
