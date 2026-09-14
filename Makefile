@@ -23,7 +23,7 @@ endif
 	go build -o "$(OUTPUT)" "$(SRC)"
 
 run: build
-	./$(OUTPUT)
+	$(OUTPUT)
 
 gorun:
 	go run $(SRC)
