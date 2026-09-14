@@ -13,9 +13,7 @@ func ReformatScript(script []string) []string {
 	newScript := []string{}
 
 	for _, line := range script {
-		if strings.TrimSpace(line) != "" { // Remove empty lines
-			newScript = append(newScript, strings.TrimSpace(line))
-		}
+		newScript = append(newScript, strings.TrimSpace(line))
 	}
 
 	return newScript
@@ -24,11 +22,15 @@ func ReformatScript(script []string) []string {
 func IsVersionDelimiter(line string) bool {
 	cmd, _ := shellwords.Split(line)
 
-	if strings.HasPrefix(cmd[0], "@") {
-		return true
-	} else {
-		return false
+	if len(cmd) > 0 {
+		if strings.HasPrefix(cmd[0], "@") {
+			return true
+		} else {
+			return false
+		}
 	}
+
+	return false
 }
 
 func CountVersions(script []string) int {
@@ -74,21 +76,25 @@ func ValidateScript(script []string) error {
 
 	for linen, line := range script {
 		cmd, err := shellwords.Split(line)
-		if err != nil {
-			return fmt.Errorf("Game install script is invalid: (%v) Line can't be parsed", linen)
-		}
-
-		if cmd[0][0] == '@' {
-			if cmd[0] == "@" {
-				return fmt.Errorf("Game install script is invalid: (%v) Version delimiter has no name", linen)
+		if len(cmd) > 0 {
+			if err != nil {
+				return fmt.Errorf("Game install script is invalid: (%v) Line can't be parsed", linen + 1)
 			}
-		}
 
-		switch cmd[0] {
-		case "set":
-			// The 'set' command requires scripts to include whitespaces before and after the "=" character. If the script has the "=" character between the variable name and the variable value wihtout any whitespaces it will be parsed as being a single part: the name.
-			if !slices.Contains(cmd, "=") {
-				return fmt.Errorf("Game install script is invalid: (%v) Variable defenition does not contain a name and a value (whitespaces are required before and after the \"=\" character)", linen)
+			if cmd[0][0] == '@' {
+				if cmd[0] == "@" {
+					return fmt.Errorf("Game install script is invalid: (%v) Version delimiter has no name", linen + 1)
+				}
+			}
+
+			switch cmd[0] {
+			case "set":
+				// The 'set' command requires scripts to include whitespaces before and after the "=" character. If the script has the "=" character between the variable name and the variable value wihtout any whitespaces it will be parsed as being a single part: the name.
+				if !slices.Contains(cmd, "=") {
+					return fmt.Errorf("Game install script is invalid: (%v) Variable defenition does not contain a name and a value (whitespaces are required before and after the \"=\" character)", linen + 1)
+				}
+			default:
+				return fmt.Errorf("Game install script is invalid: (%v) Invalid command", linen + 1)
 			}
 		}
 	}
@@ -138,13 +144,15 @@ func ParseScriptVariables(script []string) map[string]string {
 	for _, line := range script {
 		cmd, _ := shellwords.Split(line)
 
-		if cmd[0] == "set" {
-			defenition := strings.Split(strings.Join(cmd[1:], ""), "=")
+		if len(cmd) > 0 {
+			if cmd[0] == "set" {
+				defenition := strings.Split(strings.Join(cmd[1:], ""), "=")
 
-			variableName := defenition[0]
-			variableValue := strings.Join(defenition[1:], "=")
+				variableName := defenition[0]
+				variableValue := strings.Join(defenition[1:], "=")
 
-			vars[variableName] = variableValue
+				vars[variableName] = variableValue
+			}
 		}
 	}
 	
@@ -223,7 +231,7 @@ func ParseGameLatestVersion(script []string) string {
 	return ""
 }
 
-func RunScript(script []string, force bool) error {
+func RunScript(script []string, force bool, installPath string) error {
 	for linen := range script {
 		fmt.Printf("\r%v/%v", linen, len(script))
 	}

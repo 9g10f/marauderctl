@@ -1,14 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
 )
 
+func VerifyAvailableSize(script []string, installPath string) error {
+	return nil
+}
+
 func Install() *cobra.Command {
 	var server string
+	var installPath string
 	var force bool // Ignores the device's remaining size for installation
 
 	cmd := &cobra.Command{
@@ -21,9 +23,14 @@ func Install() *cobra.Command {
 				return err
 			}
 
-			fmt.Println(strings.Join(script, "\n"))
+			if !force {
+				err = VerifyAvailableSize(script, installPath)
+				if err != nil {
+					return err
+				}
+			}
 
-			err = RunScript(script, force)
+			err = RunScript(script, force, installPath)
 			if err != nil {
 				return err
 			}
@@ -32,8 +39,8 @@ func Install() *cobra.Command {
 		},
 	}
 
-	// cmd.Flags().StringVarP(&server, "server", "s", "https://marauder.k.vu/s/", "Server with install scripts")
-	cmd.Flags().StringVarP(&server, "server", "s", "file://./s/", "Server with install scripts")
+	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
+	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Ignore warnings and proceed with installation regardless")
 	cmd.Flags().BoolVarP(&force, "force", "f", false, "Ignore warnings and proceed with installation regardless")
 
 	return cmd

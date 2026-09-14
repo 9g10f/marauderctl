@@ -1,12 +1,7 @@
 package main
 
-var Version = "0.0.2"
-
 func main() {
-	Root.AddCommand(Install())
-	Root.AddCommand(Query())
-
-	err := Root.Execute()
+	err := marauderctl()
 	if err != nil {
 		panic(err)
 	}

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +23,7 @@ func Query() *cobra.Command {
 					return err
 				}
 
-				fmt.Print(script)
+				fmt.Print(strings.Join(script, "\n"))
 			case "name":
 				script, err := GetScript(args[0], server)
 				if err != nil {
@@ -89,6 +91,8 @@ func Query() *cobra.Command {
 				}
 
 				fmt.Print(size)
+			default:
+				return errors.New("Invalid query parameter")
 			}
 
 			return nil
