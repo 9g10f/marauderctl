@@ -13,10 +13,10 @@ func Install() *cobra.Command {
 		Use: "install <game-id>@[game-version]",
 		Short: "Install a game",
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			script, err := GetInstallScript(args[0], server)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			script, err := GetVersionedScript(args[0], server)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			fmt.Println(script)
@@ -26,6 +26,8 @@ func Install() *cobra.Command {
 			}
 
 			fmt.Printf("\r%v/%v", len(script), len(script))
+
+			return nil
 		},
 	}
 

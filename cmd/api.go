@@ -20,22 +20,11 @@ func CountVersions(script []string) int {
 	return count
 }
 
-func GetInstallScript(game string, server string) ([]string, error) {
-	var script []string
+func GetScript(game string, gameId string, server string) ([]string, error) {
 	var fullScript []string
-	var gameId string
-	var gameVersion string
 
 	if strings.Count(game, "@") > 1 {
 		return nil, errors.New("Invalid game field format")
-	}
-
-	if !strings.Contains(game, "@") {
-		gameId = game
-		gameVersion = "latest"
-	} else {
-		gameId = strings.Split(game, "@")[0]
-		gameVersion = strings.Split(game, "@")[1]
 	}
 
 	if before, ok := strings.CutPrefix(server, "file://"); ok {
@@ -58,6 +47,27 @@ func GetInstallScript(game string, server string) ([]string, error) {
 		}
 
 		fullScript = strings.Split(string(data), "\n")
+	}
+
+	return fullScript, nil
+}
+
+func GetVersionedScript(game string, server string) ([]string, error) {
+	var script []string
+	var gameId string
+	var gameVersion string
+
+	if !strings.Contains(game, "@") {
+		gameId = game
+		gameVersion = "latest"
+	} else {
+		gameId = strings.Split(game, "@")[0]
+		gameVersion = strings.Split(game, "@")[1]
+	}
+
+	fullScript, err := GetScript(game, gameId, server)
+	if err != nil {
+		return nil, err
 	}
 
 	nGameVersions := CountVersions(fullScript)
