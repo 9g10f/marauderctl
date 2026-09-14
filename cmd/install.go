@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 func Install() *cobra.Command {
 	var server string
+	var force bool // Ignores the device's remaining size for installation
 
 	cmd := &cobra.Command{
 		Use: "install <game-id>@[game-version]",
@@ -19,13 +21,12 @@ func Install() *cobra.Command {
 				return err
 			}
 
-			fmt.Println(script)
+			fmt.Println(strings.Join(script, "\n"))
 
-			for linen := range script {
-				fmt.Printf("\r%v/%v", linen, len(script))
+			err = RunScript(script, force)
+			if err != nil {
+				return err
 			}
-
-			fmt.Printf("\r%v/%v", len(script), len(script))
 
 			return nil
 		},
@@ -33,6 +34,7 @@ func Install() *cobra.Command {
 
 	// cmd.Flags().StringVarP(&server, "server", "s", "https://marauder.k.vu/s/", "Server with install scripts")
 	cmd.Flags().StringVarP(&server, "server", "s", "file://./s/", "Server with install scripts")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Ignore warnings and proceed with installation regardless")
 
 	return cmd
 }
