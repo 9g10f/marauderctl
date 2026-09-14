@@ -15,8 +15,12 @@ OUTPUT := $(BUILD)$(BINARY)
 all: build
 
 build:
-	mkdir -p $(BUILD)
-	go build -o $(OUTPUT) $(SRC)
+ifeq ($(OS),Windows_NT)
+	if not exist "$(BUILD)" mkdir "$(BUILD)"
+else
+	mkdir -p "$(BUILD)"
+endif
+	go build -o "$(OUTPUT)" "$(SRC)"
 
 run: build
 	./$(OUTPUT)
@@ -28,4 +32,8 @@ tidy:
 	go mod tidy
 
 clean:
-	rm -rf $(BUILD)
+ifeq ($(OS),Windows_NT)
+	if exist "$(BUILD)" rmdir /s /q "$(BUILD)"
+else
+	rm -rf "$(BUILD)"
+endif
