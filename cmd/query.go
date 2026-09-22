@@ -99,8 +99,7 @@ func Query() *cobra.Command {
 		},
 	}
 
-	// cmd.Flags().StringVarP(&server, "server", "s", "https://marauder.k.vu/s/", "Server with install scripts")
-	cmd.Flags().StringVarP(&server, "server", "s", "file://./s/", "Server with install scripts")
+	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
 
 	return cmd
 }

@@ -12,6 +12,7 @@ func Install() *cobra.Command {
 	var server string
 	var installPath string
 	var force bool // Ignores the device's remaining size for installation
+	var resumeline int
 
 	cmd := &cobra.Command{
 		Use: "install <game-id>@[game-version]",
@@ -30,7 +31,7 @@ func Install() *cobra.Command {
 				}
 			}
 
-			err = RunScript(script, force, installPath)
+			err = RunScript(script, force, installPath, resumeline)
 			if err != nil {
 				return err
 			}
@@ -40,8 +41,9 @@ func Install() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
-	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Ignore warnings and proceed with installation regardless")
+	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path for game installation")
 	cmd.Flags().BoolVarP(&force, "force", "f", false, "Ignore warnings and proceed with installation regardless")
+	cmd.Flags().IntVarP(&resumeline, "resume-line", "r", 0, "Resume installation from a specified install script line number")
 
 	return cmd
 }

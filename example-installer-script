@@ -1,0 +1,16 @@
+set name = "Backrooms Escape Together"
+set dir = "$path/Backrooms Escape Together/"
+set exe = "$path/Backrooms Escape Together/BetGame.exe"
+set max-size = 30064822747
+set size = 15707720199
+
+@06012026
+download "magnet:?xt=urn:btih:883ac1853a43a9de41b090bc23dc1c984f208022&dn=Backrooms%20Escape%20Together&xl=14357102548&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce"
+unzip "$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME.part1.rar"
+rm "$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME.part1.rar" "$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME.part2.rar" "$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME.part3.rar"
+unzip "$path/Backrooms Escape Together/Fix Repair/BackroomsEscapeTogether_Fix_Repair_Steam_V3_Generic.rar"
+rm "$path/Backrooms Escape Together/Fix Repair/BackroomsEscapeTogether_Fix_Repair_Steam_V3_Generic.rar"
+rsynca "$path/Backrooms Escape Together/Fix Repair/BackroomsEscapeTogether_Fix_Repair_Steam_V3_Generic|$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME/Backrooms Escape Together"
+rm "$path/Backrooms Escape Together/Fix Repair"
+mv "$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME/Backrooms Escape Together|$path/Backrooms Escape Together"
+rm "$path/Backrooms Escape Together/Backrooms.Escape.Together.Build.06012026-OFME"
