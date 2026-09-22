@@ -1,5 +1,5 @@
 TARGET := marauderctl
-SRC := ./cmd/
+SRC := ./
 BUILD := ./build/
 
 ifeq ($(OS),Windows_NT)
