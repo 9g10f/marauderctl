@@ -1,11 +1,11 @@
-package main
+package cmd
 
 import (
 	"github.com/spf13/cobra"
 )
 
 func VerifyAvailableSize(script []string, installPath string) error {
-	return nil
+	return nil // TODO: Implement disk scanning
 }
 
 func Install() *cobra.Command {
