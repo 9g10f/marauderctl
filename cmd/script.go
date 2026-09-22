@@ -401,7 +401,7 @@ func DownloadHTTP(downloadURL string, installPath string) error {
 	return nil
 }
 
-func DownloadTorrentMagnet(downloadURL string, installPath string) error {
+func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle string) error {
 	cfg := torrent.NewDefaultClientConfig()
 	cfg.DataDir = installPath
 
@@ -447,14 +447,18 @@ func DownloadTorrentMagnet(downloadURL string, installPath string) error {
 		minutes := (eta % 3600) / 60
 		seconds := eta % 60
 
-		fmt.Printf("\r\033[2KDownloading game files ...   %.2f%% (%d / %d bytes) @ %.2f MiB/s ETA %d:%02d:%02d", percent, completed, total, float64(speed) / 1024 / 1024, hours, minutes, seconds)
+		if outputStyle == "default" {
+			fmt.Printf("\r\033[2KDownloading game files ...   %.2f%% (%d / %d bytes) @ %.2f MiB/s ETA %d:%02d:%02d", percent, completed, total, float64(speed) / 1024 / 1024, hours, minutes, seconds)
+		}
 
 		if completed == total {
 			break
 		}
 	}
 
-	fmt.Println()
+	if outputStyle == "default" {
+		fmt.Println()
+	}
 
 	client.WaitAll()
 
@@ -481,7 +485,7 @@ func DownloadTorrentMagnet(downloadURL string, installPath string) error {
 // Its value (32) is fixed by the Windows API
 const ERROR_SHARING_VIOLATION syscall.Errno = 32
 
-func RunScript(script []string, force bool, installPath string, resumeline int) error {
+func RunScript(script []string, force bool, installPath string, resumeline int, outputStyle string) error {
 	for linen, line := range script {
 		if linen + 1 < resumeline {
 			continue
@@ -490,9 +494,6 @@ func RunScript(script []string, force bool, installPath string, resumeline int) 
 		cmd, _ := shellwords.Split(line)
 		
 		if len(cmd) > 0 { // Skip blank lines
-			fmt.Println(line) // REMOVE
-			// fmt.Scanln() // REMOVE
-
 			switch cmd[0] {
 			case "set":
 				// Variables are handled by ParseScriptVariables
@@ -511,7 +512,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int) 
 							return err
 						}
 					} else {
-						err := DownloadTorrentMagnet(downloadURL, installPath)
+						err := DownloadTorrentMagnet(downloadURL, installPath, outputStyle)
 						if err != nil {
 							return err
 						}
