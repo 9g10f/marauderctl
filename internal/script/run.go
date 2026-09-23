@@ -99,7 +99,17 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 						err := command.Run()
 						if err != nil {
-							return err
+							exitError, ok := err.(*exec.ExitError)
+							if !ok {
+								return err
+							}
+
+							code := exitError.ExitCode()
+
+							// We don't throw an error when the exit code is 2 because that's the exit code 7z throws when even tho it still unzipped the files there were some warnings (e.g. Unsupported Method)
+							if code != 2 {
+								return err
+							}
 						}
 
 						if outputStyle == "default" {
