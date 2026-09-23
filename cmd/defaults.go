@@ -9,7 +9,7 @@ func DEFAULTINSTALLPATH() string {
 	if runtime.GOOS == "windows" {
 		return os.Getenv("USERPROFILE") + "/Marauder/Games"
 	} else {
-		return "~/Marauder/Games"
+		return os.Getenv("HOME") + "/Marauder/Games"
 	}
 }
 
