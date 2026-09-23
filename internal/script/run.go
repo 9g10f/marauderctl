@@ -64,7 +64,6 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 			case "unzip":
 				// The unzip command can take various arguments (paths) and uses 7-Zip (a dependency) to unzip all files
 				// The files are unziped directly to their current directory
-
 				for i, rawFilepath := range command {
 					if i == 0 {
 						continue
@@ -72,31 +71,38 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 					trueFilepath := GetProcessedFilePath(rawFilepath, installPath)
 
-					if outputStyle == "default" {
-						fmt.Printf("\r\033[Unzipping game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
-					} else if outputStyle == "json" {
-						fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 0, \"eta\": 0}", trueFilepath)
+					trueFilepathGlob, _ := filepath.Glob(trueFilepath)
+					if trueFilepathGlob == nil {
+						return fmt.Errorf("File(s) not found: '%v'", trueFilepath)
 					}
 
-					command := exec.Command(
-						"7z",
-						"x",
-						trueFilepath,
-						"-ponline-fix.me", // TODO: Needs to be customizable in the future
-						"-y",
-					)
+					for _, source := range trueFilepathGlob {
+						if outputStyle == "default" {
+							fmt.Printf("\r\033[Unzipping game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+						} else if outputStyle == "json" {
+							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 0, \"eta\": 0}", source)
+						}
 
-					command.Dir = filepath.Dir(trueFilepath)
+						command := exec.Command(
+							"7z",
+							"x",
+							source,
+							"-ponline-fix.me", // TODO: Needs to be customizable in the future
+							"-y",
+						)
 
-					err := command.Run()
-					if err != nil {
-						return err
-					}
+						command.Dir = filepath.Dir(source)
 
-					if outputStyle == "default" {
-						fmt.Printf("\r\033[Unzipping game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
-					} else if outputStyle == "json" {
-						fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 100, \"eta\": 0}\n", trueFilepath)
+						err := command.Run()
+						if err != nil {
+							return err
+						}
+
+						if outputStyle == "default" {
+							fmt.Printf("\r\033[Unzipping game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+						} else if outputStyle == "json" {
+							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 100, \"eta\": 0}\n", source)
+						}
 					}
 				}
 			case "rm":
@@ -108,46 +114,53 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 					trueFilepath := GetProcessedFilePath(rawFilepath, installPath)
 
-					if outputStyle == "default" {
-						fmt.Printf("\r\033[Removing files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
-					} else if outputStyle == "json" {
-						fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 0, \"eta\": 0}", trueFilepath)
+					trueFilepathGlob, _ := filepath.Glob(trueFilepath)
+					if trueFilepathGlob == nil {
+						return fmt.Errorf("File(s) not found: '%v'", trueFilepath)
 					}
 
-					var err error
-					success := false
-					for attempts := 0; attempts < 40; attempts++ {
-						err = os.RemoveAll(trueFilepath)
-						if err == nil {
-							success = true
-							break
+					for _, source := range trueFilepathGlob {
+						if outputStyle == "default" {
+							fmt.Printf("\r\033[Removing files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+						} else if outputStyle == "json" {
+							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
 
-						pathError, ok := err.(*os.PathError)
-						if ok {
-							sysError, ok := pathError.Err.(syscall.Errno)
+						var err error
+						success := false
+						for attempts := 0; attempts < 40; attempts++ {
+							err = os.RemoveAll(source)
+							if err == nil {
+								success = true
+								break
+							}
+
+							pathError, ok := err.(*os.PathError)
 							if ok {
-								// Linux doesn't have an equivalent to Windows sharing violation so it won't throw an error in that situation
-								// Checking for it everytime isn't harmfull on Linux machines because the error that shares the same error number, EPIPE (Broken pipe), can't happen in an unlink or rmdir syscall
-								if sysError == ERROR_SHARING_VIOLATION {
-									// If the file(s) we are trying to delete is/are locked, retry 25 times with 250 millisecond intervals before finally crashing
-									time.Sleep(250 * time.Millisecond)
-									continue
+								sysError, ok := pathError.Err.(syscall.Errno)
+								if ok {
+									// Linux doesn't have an equivalent to Windows sharing violation so it won't throw an error in that situation
+									// Checking for it everytime isn't harmfull on Linux machines because the error that shares the same error number, EPIPE (Broken pipe), can't happen in an unlink or rmdir syscall
+									if sysError == ERROR_SHARING_VIOLATION {
+										// If the file(s) we are trying to delete is/are locked, retry 25 times with 250 millisecond intervals before finally crashing
+										time.Sleep(250 * time.Millisecond)
+										continue
+									}
 								}
 							}
+
+							return err
 						}
 
-						return err
-					}
+						if !success {
+							return err
+						}
 
-					if !success {
-						return err
-					}
-
-					if outputStyle == "default" {
-						fmt.Printf("\r\033[Removing files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
-					} else if outputStyle == "json" {
-						fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 100, \"eta\": 0}\n", trueFilepath)
+						if outputStyle == "default" {
+							fmt.Printf("\r\033[Removing files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+						} else if outputStyle == "json" {
+							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 100, \"eta\": 0}\n", source)
+						}
 					}
 				}
 			case "rsynca":
@@ -164,27 +177,45 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 					filepathSource := GetProcessedFilePath(rawFilepathSource, installPath)
 					filepathDestination := GetProcessedFilePath(rawFilepathDestination, installPath)
 
-					if outputStyle == "default" {
-						fmt.Printf("\r\033[Patching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
-					} else if outputStyle == "json" {
-						fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}\n", filepathSource, filepathDestination)
+					filepathSourceGlob, _ := filepath.Glob(filepathSource)
+					if filepathSourceGlob == nil {
+						return fmt.Errorf("File(s) not found: '%v'", filepathSource)
 					}
 
-					err := RsyncA(filepathSource, filepathDestination)
-					if err != nil {
-						return err
+					filepathDestinationGlob, _ := filepath.Glob(filepathDestination)
+					if filepathDestinationGlob == nil {
+						return fmt.Errorf("File(s) not found: '%v'", filepathDestination)
 					}
 
-					if outputStyle == "default" {
-						fmt.Printf("\r\033[Patching game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
-					} else if outputStyle == "json" {
-						fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 100, \"eta\": 0}\n", filepathSource, filepathDestination)
+					if len(filepathDestinationGlob) != 1 {
+						return fmt.Errorf("Too many destinations: '%v'", filepathDestination)
+					}
+
+					sources := filepathSourceGlob
+					destination := filepathDestinationGlob[0]
+
+					for _, source := range sources {
+						if outputStyle == "default" {
+							fmt.Printf("\r\033[Patching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+						} else if outputStyle == "json" {
+							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}\n", source, destination)
+						}
+
+						err := RsyncA(source, destination)
+						if err != nil {
+							return err
+						}
+
+						if outputStyle == "default" {
+							fmt.Printf("\r\033[Patching game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+						} else if outputStyle == "json" {
+							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 100, \"eta\": 0}\n", source, destination)
+						}
 					}
 				}
 			case "mv":
 				// The mv command can take various pairs of arguments (path|path) separated by the '|' character and moves a file or a directory
 				// Mostly identical to the Unix mv command
-				// Supports glob
 				for i, rawFilepaths := range command {
 					if i == 0 {
 						continue

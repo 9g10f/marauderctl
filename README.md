@@ -35,7 +35,7 @@ You can use `marauderctl` to install games through it's `game-id` and it's `game
 ```
 marauderctl query <game-id>@[game-version/latest] script
 ```
-This prints the script of the game you selected. After checking the script install it running:
+This prints the script of the game you selected. After checking the script install it by running:
 ```
 marauderctl install <game-id>@[game-version/latest]
 ```

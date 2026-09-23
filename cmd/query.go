@@ -13,12 +13,12 @@ func Query() *cobra.Command {
 	var server string
 
 	cmd := &cobra.Command{
-		Use: "query <game-id>@[game-version] <query-param:gameScript|name|latest-version|dir|exe|max-size|size>",
+		Use: "query <game-id>@[game-version] <query-param:script|name|latest-version|dir|exe|max-size|size>",
 		Short: "Get information about a game",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch args[1] {
-			case "gameScript":
+			case "script":
 				gameScript, err := script.GetVersionedScript(args[0], server)
 				if err != nil {
 					return err

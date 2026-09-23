@@ -190,7 +190,33 @@ func ValidateScript(script []string) error {
 					}
 				}
 			case "unzip":
+				for i, rawFilepath := range cmd {
+					if i == 0 {
+						continue
+					}
+
+					// Parse dummy install paths just to test glob syntax
+					trueFilepath := GetProcessedFilePath(rawFilepath, "./")
+
+					_, err := filepath.Glob(trueFilepath)
+					if err != nil {
+						return fmt.Errorf("Game install script is invalid: (%v) Invalid glob path argument for unzip: '%v' | error=%v", linen + 1, rawFilepath, err)
+					}
+				}
 			case "rm":
+				for i, rawFilepath := range cmd {
+					if i == 0 {
+						continue
+					}
+
+					// Parse dummy install paths just to test glob syntax
+					processedFilepath := GetProcessedFilePath(rawFilepath, "./")
+
+					_, err := filepath.Glob(processedFilepath)
+					if err != nil {
+						return fmt.Errorf("Game install script is invalid: (%v) Invalid glob path argument for rm: '%v' | error=%v", linen + 1, rawFilepath, err)
+					}
+				}
 			case "rsynca":
 				for i, rawFilepaths := range cmd {
 					if i == 0 {
@@ -199,6 +225,23 @@ func ValidateScript(script []string) error {
 
 					if strings.Count(rawFilepaths, "|") != 1 {
 						return fmt.Errorf("Game install script is invalid: (%v) Invalid argument for rsynca: '%v', exactly two parts (separated by a '|' character) are required", rawFilepaths, linen + 1)
+					}
+
+					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
+					rawFilepathDestination := strings.Split(rawFilepaths, "|")[1]
+
+					// Parse dummy install paths just to test glob syntax
+					filepathSource := GetProcessedFilePath(rawFilepathSource, "./")
+					filepathDestination := GetProcessedFilePath(rawFilepathDestination, "./")
+
+					_, err := filepath.Glob(filepathSource)
+					if err != nil {
+						return fmt.Errorf("Game install script is invalid: (%v) Invalid glob path argument for rsynca: '%v' | error=%v", linen + 1, filepathSource, err)
+					}
+
+					_, err = filepath.Glob(filepathDestination)
+					if err != nil {
+						return fmt.Errorf("Game install script is invalid: (%v) Invalid glob path argument for rsynca: '%v' | error=%v", linen + 1, filepathDestination, err)
 					}
 				}
 			case "mv":
