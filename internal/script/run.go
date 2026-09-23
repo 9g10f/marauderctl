@@ -78,7 +78,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 					for _, source := range trueFilepathGlob {
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Unzipping game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KUnzipping game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
@@ -99,7 +99,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						}
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Unzipping game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KUnzipping game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
@@ -121,7 +121,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 					for _, source := range trueFilepathGlob {
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Removing files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KRemoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
@@ -157,7 +157,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						}
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Removing files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KRemoving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
@@ -196,7 +196,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 					for _, source := range sources {
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Patching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KPatching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}\n", source, destination)
 						}
@@ -207,7 +207,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						}
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Patching game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KPatching game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 100, \"eta\": 0}\n", source, destination)
 						}
@@ -247,7 +247,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 					destinationInfo, err := os.Stat(destination)
 					if os.IsNotExist(err) {
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Moving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}\n", sources[0], destination)
 						}
@@ -257,7 +257,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						}
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Moving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 100, \"eta\": 0}\n", sources[0], destination)
 						}
@@ -275,7 +275,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						target := filepath.Join(destination, filepath.Base(source))
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Moving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}\n", source, target)
 						}
@@ -286,7 +286,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						}
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[Moving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if outputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 100, \"eta\": 0}\n", source, target)
 						}

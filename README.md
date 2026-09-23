@@ -52,4 +52,4 @@ What this looks like in practice:
 > ```
 
 ## License
-marauderctl is free and licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
+marauderctl is free and licensed under the [GNU General Public License v3.0](LICENSE).
