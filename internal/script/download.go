@@ -113,7 +113,12 @@ func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle s
 		return errors.Join(errs...)
 	}
 
-	err = os.Remove(filepath.Join(installPath, ".torrent.db"))
+	torrentFile, err := filepath.Glob(filepath.Join(installPath, ".torrent*"))
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(torrentFile[0])
 	if err != nil {
 		return err
 	}

@@ -17,6 +17,10 @@ import (
 const ERROR_SHARING_VIOLATION syscall.Errno = 32
 
 func RunScript(script []string, force bool, installPath string, resumeline int, outputStyle string) error {
+	if _, ok := os.LookupEnv("TORRENT_STORAGE_DEFAULT_FILE_IO"); !ok {
+		os.Setenv("TORRENT_STORAGE_DEFAULT_FILE_IO", "classic") // Set torrent setting to close mapped files
+	}
+
 	for linen, line := range script {
 		if linen + 1 < resumeline {
 			continue
@@ -128,7 +132,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 						var err error
 						success := false
-						for attempts := 0; attempts < 40; attempts++ {
+						for attempts := 0; attempts < 5; attempts++ {
 							err = os.RemoveAll(source)
 							if err == nil {
 								success = true
@@ -142,7 +146,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 									// Linux doesn't have an equivalent to Windows sharing violation so it won't throw an error in that situation
 									// Checking for it everytime isn't harmfull on Linux machines because the error that shares the same error number, EPIPE (Broken pipe), can't happen in an unlink or rmdir syscall
 									if sysError == ERROR_SHARING_VIOLATION {
-										// If the file(s) we are trying to delete is/are locked, retry 25 times with 250 millisecond intervals before finally crashing
+										// If the file(s) we are trying to delete is/are locked, retry 5 times with 250 millisecond intervals before finally crashing
 										time.Sleep(250 * time.Millisecond)
 										continue
 									}
@@ -196,9 +200,9 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 
 					for _, source := range sources {
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[2KPatching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KPatching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if outputStyle == "json" {
-							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}\n", source, destination)
+							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}", source, destination)
 						}
 
 						err := RsyncA(source, destination)
@@ -247,9 +251,9 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 					destinationInfo, err := os.Stat(destination)
 					if os.IsNotExist(err) {
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if outputStyle == "json" {
-							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}\n", sources[0], destination)
+							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}", sources[0], destination)
 						}
 
 						if err := os.Rename(sources[0], destination); err != nil {
@@ -275,9 +279,9 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						target := filepath.Join(destination, filepath.Base(source))
 
 						if outputStyle == "default" {
-							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if outputStyle == "json" {
-							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}\n", source, target)
+							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}", source, target)
 						}
 
 						err = os.Rename(source, target)

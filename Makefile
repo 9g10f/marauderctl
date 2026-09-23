@@ -2,6 +2,10 @@ TARGET := marauderctl
 SRC := ./
 BUILD := ./build/
 
+BUILDFLAGS := -trimpath
+
+export CGO_ENABLED := 0
+
 ifeq ($(OS),Windows_NT)
     BINARY := $(TARGET).exe
 else
@@ -20,7 +24,7 @@ ifeq ($(OS),Windows_NT)
 else
 	mkdir -p "$(BUILD)"
 endif
-	go build -o "$(OUTPUT)" "$(SRC)"
+	go build $(BUILDFLAGS) -o "$(OUTPUT)" "$(SRC)"
 
 run: build
 	$(OUTPUT)
