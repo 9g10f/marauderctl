@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
@@ -27,19 +28,19 @@ func Install() *cobra.Command {
 				return fmt.Errorf("Invalid output type: '%v'", outputStyle)
 			}
 
-			script, err := GetVersionedScript(args[0], server)
+			gameScript, err := script.GetVersionedScript(args[0], server)
 			if err != nil {
 				return err
 			}
 
 			if !force {
-				err = VerifyAvailableSize(script, installPath)
+				err = VerifyAvailableSize(gameScript, installPath)
 				if err != nil {
 					return err
 				}
 			}
 
-			err = RunScript(script, force, installPath, resumeline, outputStyle)
+			err = script.RunScript(gameScript, force, installPath, resumeline, outputStyle)
 			if err != nil {
 				return err
 			}

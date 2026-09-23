@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
@@ -12,80 +13,80 @@ func Query() *cobra.Command {
 	var server string
 
 	cmd := &cobra.Command{
-		Use: "query <game-id>@[game-version] <query-param:script|name|latest-version|dir|exe|max-size|size>",
+		Use: "query <game-id>@[game-version] <query-param:gameScript|name|latest-version|dir|exe|max-size|size>",
 		Short: "Get information about a game",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch args[1] {
-			case "script":
-				script, err := GetVersionedScript(args[0], server)
+			case "gameScript":
+				gameScript, err := script.GetVersionedScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(strings.Join(script, "\n"))
+				fmt.Print(strings.Join(gameScript, "\n"))
 			case "name":
-				script, err := GetScript(args[0], server)
+				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				gameName, err := ParseGameName(script)
+				gameName, err := script.ParseGameName(gameScript)
 				if err != nil {
 					return err
 				}
 
 				fmt.Print(gameName)
 			case "latest-version":
-				script, err := GetScript(args[0], server)
+				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(ParseGameLatestVersion(script))
+				fmt.Print(script.ParseGameLatestVersion(gameScript))
 			case "dir":
-				script, err := GetScript(args[0], server)
+				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				dir, err := ParseGameDir(script)
+				dir, err := script.ParseGameDir(gameScript)
 				if err != nil {
 					return err
 				}
 
 				fmt.Print(dir)
 			case "exe":
-				script, err := GetScript(args[0], server)
+				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				exe, err := ParseGameExe(script)
+				exe, err := script.ParseGameExe(gameScript)
 				if err != nil {
 					return err
 				}
 
 				fmt.Print(exe)
 			case "max-size":
-				script, err := GetScript(args[0], server)
+				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				masSize, err := ParseGameMaxSize(script)
+				masSize, err := script.ParseGameMaxSize(gameScript)
 				if err != nil {
 					return err
 				}
 
 				fmt.Print(masSize)
 			case "size":
-				script, err := GetScript(args[0], server)
+				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				size, err := ParseGameSize(script)
+				size, err := script.ParseGameSize(gameScript)
 				if err != nil {
 					return err
 				}
@@ -99,7 +100,7 @@ func Query() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
+	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install gameScripts")
 
 	return cmd
 }

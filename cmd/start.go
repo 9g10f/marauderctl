@@ -3,6 +3,7 @@ package cmd
 import (
 	"os/exec"
 
+	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
@@ -15,21 +16,21 @@ func Start() *cobra.Command {
 		Short: "Start a game",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			script, err := GetScript(args[0], server)
+			gameScript, err := script.GetScript(args[0], server)
 			if err != nil {
 				return err
 			}
 
-			exe, err := ParseGameExe(script)
+			exe, err := script.ParseGameExe(gameScript)
 			if err != nil {
 				return err
 			}
 
-			exePath := GetProcessedFilePath(exe, installPath)
+			exePath := script.GetProcessedFilePath(exe, installPath)
 
 			exeCmd := exec.Command(exePath)
 			
-			err = exeCmd.Start()
+			err = exeCmd.Run()
 			if err != nil {
 				return err
 			}
