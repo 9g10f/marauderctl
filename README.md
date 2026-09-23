@@ -19,4 +19,37 @@
 
 ---
 
-The CLI backend for Marauder Launcher
+marauderctl is the CLI backend for Marauder Launcher. You can use it to install & run regular or pirated games through a CLI. marauderctl relies on custom scripts to install games with our main server (storage for the scripts) being [marauder.k.vu](https://marauder.k.vu).
+
+> [!IMPORTANT]
+> This project is still under heavy development and has not even reached v0.1, use it with caution.
+
+## Installation
+You can install `marauderctl` through Go if you have it installed:
+```
+go install https://codeberg.org/9g10f/marauderctl@latest
+```
+
+## Usage
+You can use `marauderctl` to install games through it's `game-id` and it's `game-version` on your server, but it's best to first always check the scripts for malicious code:
+```
+marauderctl query <game-id>@[game-version/latest] script
+```
+This prints the script of the game you selected. After checking the script install it running:
+```
+marauderctl install <game-id>@[game-version/latest]
+```
+You can also run your games with:
+```
+marauderctl start <game-id>@[game-version/latest]
+```
+
+What this looks like in practice:
+> ```
+> $ marauderctl query 0 script
+> $ marauderctl install 0
+> $ marauderctl start 0
+> ```
+
+## License
+marauderctl is free and licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
