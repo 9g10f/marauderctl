@@ -2,18 +2,17 @@ package cmd
 
 import (
 	"os"
-	"runtime"
 )
 
 func DEFAULTINSTALLPATH() string {
-	if runtime.GOOS == "windows" {
-		return os.Getenv("USERPROFILE") + "/Marauder/Games"
-	} else {
-		return os.Getenv("HOME") + "/Marauder/Games"
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		homeDir = "."
 	}
+
+	return homeDir + "/Marauder/Games"
 }
 
 func DEFAULTSERVER() string {
-	return "file://./s/"
-	// https://marauder.k.vu/s/
+	return "https://marauder.k.vu/s/"
 }

@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: codeberg-medium
+
+    steps:
+      - name: Check out tagged source
+        uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          ref: ${{ forgejo.ref }}
+
+      - name: Build release
+        run: |
+          make release
+
+      - name: Create Codeberg release and upload assets
+        env:
+          API_URL: ${{ forgejo.api_url }}
+          REPOSITORY: ${{ forgejo.repository }}
+          TAG_NAME: ${{ forgejo.ref_name }}
+          FORGEJO_TOKEN: ${{ forgejo.token }}
+        run: |
+          set -euo pipefail
+
+          release_json="$(
+            curl --fail-with-body --silent --show-error \
+              --request POST \
+              --url "${API_URL}/repos/${REPOSITORY}/releases" \
+              --header "Authorization: token ${FORGEJO_TOKEN}" \
+              --header "Content-Type: application/json" \
+              --data "$(jq -n \
+                --arg tag "$TAG_NAME" \
+                --arg name "$TAG_NAME" \
+                '{
+                  tag_name: $tag,
+                  name: $name,
+                  body: ("Automated release " + $tag),
+                  draft: false,
+                  prerelease: false
+                }')"
+          )"
+
+          release_id="$(printf '%s' "$release_json" | jq -r '.id')"
+
+          if [ -z "$release_id" ] || [ "$release_id" = "null" ]; then
+            echo "Could not determine the release ID:"
+            printf '%s\n' "$release_json"
+            exit 1
+          fi
+
+          find dist -maxdepth 1 -type f -print0 |
+            while IFS= read -r -d '' file; do
+              filename="$(basename "$file")"
+              encoded_filename="$(
+                jq -rn --arg filename "$filename" '$filename | @uri'
+              )"
+
+              curl --fail-with-body --silent --show-error \
+                --request POST \
+                --url "${API_URL}/repos/${REPOSITORY}/releases/${release_id}/assets?name=${encoded_filename}" \
+                --header "Authorization: token ${FORGEJO_TOKEN}" \
+                --header "Content-Type: application/octet-stream" \
+                --data-binary "@${file}"
+            done

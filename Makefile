@@ -54,8 +54,6 @@ ifeq ($(OS),Windows_NT)
 	set "GOOS=windows" && set "GOARCH=arm64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-windows-arm64.exe" "$(SRC)"
 	set "GOOS=freebsd" && set "GOARCH=amd64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-freebsd-amd64" "$(SRC)"
 	set "GOOS=freebsd" && set "GOARCH=arm64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-freebsd-arm64" "$(SRC)"
-	set "GOOS=openbsd" && set "GOARCH=amd64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-openbsd-amd64" "$(SRC)"
-	set "GOOS=openbsd" && set "GOARCH=arm64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-openbsd-arm64" "$(SRC)"
 	set "GOOS=darwin" && set "GOARCH=amd64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-darwin-amd64" "$(SRC)"
 	set "GOOS=darwin" && set "GOARCH=arm64" && $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-darwin-arm64" "$(SRC)"
 else
@@ -66,7 +64,6 @@ else
 	GOOS=windows GOARCH=arm64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-windows-arm64.exe" "$(SRC)"
 	GOOS=freebsd GOARCH=amd64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-freebsd-amd64" "$(SRC)"
 	GOOS=freebsd GOARCH=arm64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-freebsd-arm64" "$(SRC)"
-	GOOS=openbsd GOARCH=amd64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-openbsd-amd64" "$(SRC)"
-	GOOS=openbsd GOARCH=arm64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-openbsd-arm64" "$(SRC)"
 	GOOS=darwin GOARCH=amd64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-darwin-amd64" "$(SRC)"
 	GOOS=darwin GOARCH=arm64 $(GO) build $(BUILDFLAGS) -o "$(RELEASE)$(TARGET)-darwin-arm64" "$(SRC)"
+endif

@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v6
+
+      - name: Run release build
+        run: make release
+
+      - name: Create GitHub release and upload files
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/*
+          generate_release_notes: true
