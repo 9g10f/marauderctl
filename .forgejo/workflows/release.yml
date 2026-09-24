@@ -14,6 +14,12 @@ jobs:
         uses: https://code.forgejo.org/actions/checkout@v4
         with:
           ref: ${{ forgejo.ref }}
+        
+      - name: Set up Go
+        uses: https://code.forgejo.org/actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
 
       - name: Build release
         run: |
