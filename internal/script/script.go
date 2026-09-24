@@ -148,9 +148,20 @@ func GetProcessedFilePath(path string, installPath string) string {
 	return strings.ReplaceAll(path, "$path", installPath)
 }
 
-func ValidateScript(script []string) error {
+func ValidateScript(script []string, game string) error {
 	if CountVersions(script) == 0 {
 		return errors.New("Game install script is invalid: (-) No versions found")
+	}
+
+	gameId := GetGameId(game)
+
+	for _, version := range ParseGameVersions(script) {
+		vars := ParseScriptVariables(gameId + "@" + version, script)
+
+		_, ok := vars["dir"]
+		if !ok {
+			return fmt.Errorf("Game install script is invalid: (-) Version %v doesn't have a directory variable set", version)
+		}
 	}
 
 	for linen, line := range script {
@@ -179,11 +190,7 @@ func ValidateScript(script []string) error {
 					if i == 0 {
 						continue
 					}
-
-					if !strings.HasPrefix(downloadURL, "http:") && !strings.HasPrefix(downloadURL, "https:") && !strings.HasPrefix(downloadURL, "magnet:") {
-						return fmt.Errorf("Game install script is invalid: (%v) Unsupported download URL: '%v'", linen + 1, downloadURL)
-					}
-
+					
 					_, err := url.Parse(downloadURL)
 					if err != nil {
 						return fmt.Errorf("Game install script is invalid: (%v) Invalid download URL: '%v' | error=%v", linen + 1, downloadURL, err)

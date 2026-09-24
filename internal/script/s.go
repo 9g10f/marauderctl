@@ -41,7 +41,7 @@ func GetScript(game string, server string) ([]string, error) {
 
 	fullScript = ReformatScript(fullScript)
 
-	err := ValidateScript(fullScript)
+	err := ValidateScript(fullScript, game)
 	if err != nil {
 		return nil, err
 	}

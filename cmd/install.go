@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/script"
@@ -33,6 +36,9 @@ func Install() *cobra.Command {
 				return err
 			}
 
+			scriptVars := script.ParseScriptVariables(args[0], gameScript)
+			gameDirectory := scriptVars["dir"]
+
 			if !force {
 				err = VerifyAvailableSize(gameScript, installPath)
 				if err != nil {
@@ -44,6 +50,19 @@ func Install() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			varsToWrite, err := json.Marshal(scriptVars)
+			if err != nil {
+				return err
+			}
+
+			localScriptFile, err := os.Create(filepath.Join(script.GetProcessedFilePath(gameDirectory, installPath), ".maraudervars"))
+			if err != nil {
+				return err
+			}
+
+			localScriptFile.Write(varsToWrite)
+			localScriptFile.Close()
 
 			return nil
 		},

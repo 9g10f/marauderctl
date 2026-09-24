@@ -47,13 +47,13 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						fmt.Printf("\r\033[2K{\"task\": \"Downloading game files\", \"details\": \"Downloading %v\", \"progress\": 0, \"eta\": 0}", downloadURL)
 					}
 
-					if strings.HasPrefix(downloadURL, "http:") || strings.HasPrefix(downloadURL, "https:") {
-						err := DownloadHTTP(downloadURL, installPath)
+					if strings.HasPrefix(downloadURL, "magnet:") {
+						err := DownloadTorrentMagnet(downloadURL, installPath, outputStyle)
 						if err != nil {
 							return err
 						}
 					} else {
-						err := DownloadTorrentMagnet(downloadURL, installPath, outputStyle)
+						err := Download(downloadURL, installPath)
 						if err != nil {
 							return err
 						}

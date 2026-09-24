@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"os/exec"
 
 	"codeberg.org/9g10f/marauderctl/internal/script"
@@ -21,9 +22,9 @@ func Start() *cobra.Command {
 				return err
 			}
 
-			exe, err := script.ParseGameExe(gameScript)
-			if err != nil {
-				return err
+			exe, ok := script.ParseScriptVariables(args[0], gameScript)["exe"]
+			if !ok {
+				return errors.New("Unable to start the game, no EXE was found in the script variables")
 			}
 
 			exePath := script.GetProcessedFilePath(exe, installPath)

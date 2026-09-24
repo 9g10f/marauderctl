@@ -14,7 +14,7 @@ import (
 	"github.com/anacrolix/torrent"
 )
 
-func DownloadHTTP(downloadURL string, installPath string) error {
+func Download(downloadURL string, installPath string) error {
 	r, err := http.Get(downloadURL)
 	if err != nil {
 		return err
