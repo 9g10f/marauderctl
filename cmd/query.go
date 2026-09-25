@@ -24,49 +24,49 @@ func Query() *cobra.Command {
 					return err
 				}
 
-				fmt.Print(strings.Join(gameScript, "\n"))
+				fmt.Println(strings.Join(gameScript, "\n"))
 			case "name":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(script.ParseScriptVariables(args[0], gameScript)["name"])
+				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["name"])
 			case "latest-version":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(script.ParseGameLatestVersion(gameScript))
+				fmt.Println(script.ParseGameLatestVersion(gameScript))
 			case "dir":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(script.ParseScriptVariables(args[0], gameScript)["dir"])
+				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["dir"])
 			case "exe":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(script.ParseScriptVariables(args[0], gameScript)["exe"])
+				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["exe"])
 			case "max-size":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(script.ParseScriptVariables(args[0], gameScript)["max-size"])
+				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["max-size"])
 			case "size":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
 					return err
 				}
 
-				fmt.Print(script.ParseScriptVariables(args[0], gameScript)["size"])
+				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["size"])
 			default:
 				return errors.New("Invalid query parameter")
 			}
