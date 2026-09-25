@@ -23,7 +23,7 @@ jobs:
 
       - name: Build release
         run: |
-          make release
+          make -j2 release
 
       - name: Create Codeberg release and upload assets
         env:
