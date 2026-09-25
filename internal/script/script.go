@@ -141,10 +141,6 @@ func GetGameId(game string) string {
 	return gameId
 }
 
-func GetProcessedFilePath(path string, installPath string, gameId string) string {
-	return strings.ReplaceAll(path, "$path", filepath.Join(installPath, gameId))
-}
-
 func GetVersionedScript(game string, server string) ([]string, error) {
 	var script []string
 

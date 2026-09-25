@@ -70,10 +70,8 @@ func ParseScriptVariables(game string, fullScript []string) map[string]string {
 	return vars
 }
 
-func ParseLocalScriptVariables(game string, installPath string) (map[string]string, error) {
-	gameId := GetGameId(game)
-
-	marauderEnvFile, err := os.Open(filepath.Join(installPath, gameId, ".marauder.env"))
+func ParseLocalScriptVariables(game string, installPath string, server string) (map[string]string, error) {
+	marauderEnvFile, err := os.Open(filepath.Join(GetGameFolder(installPath, server, game), ".marauder.env"))
 	if err != nil {
 		return nil, err
 	}

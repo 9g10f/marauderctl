@@ -50,11 +50,9 @@ func Install() *cobra.Command {
 				}
 			}
 
-			gameId := script.GetGameId(args[0])
+			os.MkdirAll(script.GetGameFolder(installPath, server, args[0]), 0755)
 
-			os.MkdirAll(filepath.Join(installPath, gameId), 0755)
-
-			err = script.RunScript(gameScript, force, installPath, resumeline, outputStyle, args[0])
+			err = script.RunScript(gameScript, force, installPath, resumeline, outputStyle, server, args[0])
 			if err != nil {
 				return err
 			}
@@ -64,7 +62,7 @@ func Install() *cobra.Command {
 				return err
 			}
 
-			localScriptFile, err := os.Create(filepath.Join(installPath, gameId, ".marauder.env"))
+			localScriptFile, err := os.Create(filepath.Join(script.GetGameFolder(installPath, server, args[0]), ".marauder.env"))
 			if err != nil {
 				return err
 			}

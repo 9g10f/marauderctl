@@ -7,8 +7,8 @@ import (
 	"strconv"
 )
 
-func WriteProgress(progress int, installPath string, gameId string) error {
-	progressFile, err := os.Create(filepath.Join(installPath, gameId, ".marauder.iprogress"))
+func WriteProgress(progress int, installPath string, server string, game string) error {
+	progressFile, err := os.Create(filepath.Join(GetGameFolder(installPath, server, game), ".marauder.iprogress"))
 	if err != nil {
 		return err
 	}
@@ -18,8 +18,8 @@ func WriteProgress(progress int, installPath string, gameId string) error {
 	return nil
 }
 
-func GetProgress(installPath string, gameId string) (int, error) {
-	progressFile, err := os.Open(filepath.Join(installPath, gameId, ".marauder.iprogress"))
+func GetProgress(installPath string, server string, game string) (int, error) {
+	progressFile, err := os.Open(filepath.Join(GetGameFolder(installPath, server, game), ".marauder.iprogress"))
 	if err != nil {
 		return 0, err
 	}

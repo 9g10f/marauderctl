@@ -17,17 +17,32 @@ func Start() *cobra.Command {
 		Short: "Start a game",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var globalVars map[string]string
+			var localVars map[string]string
+			
+			vars := make(map[string]string)
+
 			gameScript, err := script.GetScript(args[0], server)
-			if err != nil {
-				return err
+			if err == nil {
+				globalVars = script.ParseScriptVariables(args[0], gameScript)
+			}
+			
+			localVars, _ = script.ParseLocalScriptVariables(args[0], installPath, server)
+
+			for var_, value := range globalVars {
+				vars[var_] = value
 			}
 
-			exe, ok := script.ParseScriptVariables(args[0], gameScript)["exe"]
+			for var_, value := range localVars {
+				vars[var_] = value
+			}
+
+			exe, ok := vars["exe"]
 			if !ok {
 				return errors.New("Unable to start the game, no EXE was found in the script variables")
 			}
 
-			exePath := script.GetProcessedFilePath(exe, installPath, script.GetGameId(args[0]))
+			exePath := script.GetProcessedFilePath(exe, installPath, server, args[0])
 
 			exeCmd := exec.Command(exePath)
 			

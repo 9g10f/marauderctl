@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/anacrolix/log"
@@ -44,9 +46,9 @@ func Download(downloadURL string, installPath string, gameId string) error {
 	return nil
 }
 
-func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle string, gameId string) error {
+func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle string, game string, server string) error {
 	cfg := torrent.NewDefaultClientConfig()
-	cfg.DataDir = filepath.Join(installPath, gameId)
+	cfg.DataDir = GetGameFolder(installPath, server, game)
 	cfg.Logger = log.Default.FilterLevel(log.Disabled)
 
 	client, err := torrent.NewClient(cfg)
@@ -61,6 +63,18 @@ func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle s
 	}
 
 	<-t.GotInfo()
+
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+        <-c
+
+        t.Drop()
+		client.Close()
+
+		os.Exit(1)
+    }()
+
 	t.DownloadAll()
 
 	ticker := time.NewTicker(time.Second)
@@ -115,7 +129,7 @@ func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle s
 		return errors.Join(errs...)
 	}
 
-	torrentFile, err := filepath.Glob(filepath.Join(installPath, gameId, ".torrent*"))
+	torrentFile, err := filepath.Glob(filepath.Join(GetGameFolder(installPath, server, game), ".torrent*"))
 	if err != nil {
 		return err
 	}

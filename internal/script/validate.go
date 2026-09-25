@@ -11,12 +11,10 @@ import (
 	"github.com/buildkite/shellwords"
 )
 
-func ValidateScript(script []string, game string) error {
+func ValidateScript(script []string) error {
 	if CountVersions(script) == 0 {
 		return errors.New("Game install script is invalid: (-) No versions found")
 	}
-
-	gameId := GetGameId(game)
 
 	for linen, line := range script {
 		cmd, err := shellwords.Split(line)
@@ -56,8 +54,7 @@ func ValidateScript(script []string, game string) error {
 						continue
 					}
 
-					// Parse dummy install paths just to test glob syntax
-					trueFilepath := GetProcessedFilePath(rawFilepath, "./", gameId)
+					trueFilepath := strings.ReplaceAll(rawFilepath, "$path", ".")
 
 					_, err := filepath.Glob(trueFilepath)
 					if err != nil {
@@ -70,8 +67,7 @@ func ValidateScript(script []string, game string) error {
 						continue
 					}
 
-					// Parse dummy install paths just to test glob syntax
-					processedFilepath := GetProcessedFilePath(rawFilepath, "./", gameId)
+					processedFilepath := strings.ReplaceAll(rawFilepath, "$path", ".")
 
 					_, err := filepath.Glob(processedFilepath)
 					if err != nil {
@@ -91,9 +87,8 @@ func ValidateScript(script []string, game string) error {
 					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
 					rawFilepathDestination := strings.Split(rawFilepaths, "|")[1]
 
-					// Parse dummy install paths just to test glob syntax
-					filepathSource := GetProcessedFilePath(rawFilepathSource, "./", gameId)
-					filepathDestination := GetProcessedFilePath(rawFilepathDestination, "./", gameId)
+					filepathSource := strings.ReplaceAll(rawFilepathSource, "$path", ".")
+					filepathDestination := strings.ReplaceAll(rawFilepathDestination, "$path", ".")
 
 					_, err := filepath.Glob(filepathSource)
 					if err != nil {
@@ -118,9 +113,8 @@ func ValidateScript(script []string, game string) error {
 					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
 					rawFilepathDestination := strings.Split(rawFilepaths, "|")[1]
 
-					// Parse dummy install paths just to test glob syntax
-					filepathSource := GetProcessedFilePath(rawFilepathSource, "./", gameId)
-					filepathDestination := GetProcessedFilePath(rawFilepathDestination, "./", gameId)
+					filepathSource := strings.ReplaceAll(rawFilepathSource, "$path", ".")
+					filepathDestination := strings.ReplaceAll(rawFilepathDestination, "$path", ".")
 
 					_, err := filepath.Glob(filepathSource)
 					if err != nil {
