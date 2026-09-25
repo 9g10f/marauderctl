@@ -1,6 +1,10 @@
 package script
 
 import (
+	"encoding/json"
+	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/buildkite/shellwords"
@@ -33,7 +37,7 @@ func ParseScriptVariables(game string, fullScript []string) map[string]string {
 		}
 
 		if IsVersionDelimiter(line) && line[1:] == gameVersion {
-			if stop {
+			if !stop {
 				for _, subLine := range fullScript[linen + 1:] {
 					if IsVersionDelimiter(subLine) {
 						break
@@ -64,6 +68,29 @@ func ParseScriptVariables(game string, fullScript []string) map[string]string {
 	}
 	
 	return vars
+}
+
+func ParseLocalScriptVariables(game string, installPath string) (map[string]string, error) {
+	gameId := GetGameId(game)
+
+	marauderEnvFile, err := os.Open(filepath.Join(installPath, gameId, ".marauder.env"))
+	if err != nil {
+		return nil, err
+	}
+
+	env, err := io.ReadAll(marauderEnvFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var vars map[string]string
+
+	err = json.Unmarshal(env, &vars)
+	if err != nil {
+		return nil, err
+	}
+
+	return vars, nil
 }
 
 func ParseGameVersions(script []string) []string {

@@ -16,10 +16,21 @@ import (
 // Its value (32) is fixed by the Windows API
 const ERROR_SHARING_VIOLATION syscall.Errno = 32
 
-func RunScript(script []string, force bool, installPath string, resumeline int, outputStyle string) error {
+func RunScript(script []string, force bool, installPath string, resumeline int, outputStyle string, game string) error {
 	if _, ok := os.LookupEnv("TORRENT_STORAGE_DEFAULT_FILE_IO"); !ok {
 		os.Setenv("TORRENT_STORAGE_DEFAULT_FILE_IO", "classic") // Set torrent setting to close mapped files
 	}
+
+	gameId := GetGameId(game)
+
+	progress, err := GetProgress(installPath, gameId)
+	if err != nil {
+		progress = 0
+	} else {
+		resumeline = progress + 1
+	}
+	
+	WriteProgress(progress, installPath, gameId)
 
 	for linen, line := range script {
 		if linen + 1 < resumeline {
@@ -32,6 +43,9 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 			switch command[0] {
 			case "set":
 				// Variables are handled by ParseScriptVariables
+				progress++
+				WriteProgress(progress, installPath, gameId)
+
 				continue
 			case "download":
 				// The download command can take various arguments (URLs), of clearnet, BitTorrent and in the future Tor files
@@ -48,12 +62,12 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 					}
 
 					if strings.HasPrefix(downloadURL, "magnet:") {
-						err := DownloadTorrentMagnet(downloadURL, installPath, outputStyle)
+						err := DownloadTorrentMagnet(downloadURL, installPath, outputStyle, gameId)
 						if err != nil {
 							return err
 						}
 					} else {
-						err := Download(downloadURL, installPath)
+						err := Download(downloadURL, installPath, gameId)
 						if err != nil {
 							return err
 						}
@@ -73,7 +87,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						continue
 					}
 
-					trueFilepath := GetProcessedFilePath(rawFilepath, installPath)
+					trueFilepath := GetProcessedFilePath(rawFilepath, installPath, gameId)
 
 					trueFilepathGlob, _ := filepath.Glob(trueFilepath)
 					if trueFilepathGlob == nil {
@@ -126,7 +140,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 						continue
 					}
 
-					trueFilepath := GetProcessedFilePath(rawFilepath, installPath)
+					trueFilepath := GetProcessedFilePath(rawFilepath, installPath, gameId)
 
 					trueFilepathGlob, _ := filepath.Glob(trueFilepath)
 					if trueFilepathGlob == nil {
@@ -188,8 +202,8 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
 					rawFilepathDestination := strings.Split(rawFilepaths, "|")[1]
 
-					filepathSource := GetProcessedFilePath(rawFilepathSource, installPath)
-					filepathDestination := GetProcessedFilePath(rawFilepathDestination, installPath)
+					filepathSource := GetProcessedFilePath(rawFilepathSource, installPath, gameId)
+					filepathDestination := GetProcessedFilePath(rawFilepathDestination, installPath, gameId)
 
 					filepathSourceGlob, _ := filepath.Glob(filepathSource)
 					if filepathSourceGlob == nil {
@@ -238,8 +252,8 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
 					rawFilepathDestination := strings.Split(rawFilepaths, "|")[1]
 
-					filepathSource := GetProcessedFilePath(rawFilepathSource, installPath)
-					filepathDestination := GetProcessedFilePath(rawFilepathDestination, installPath)
+					filepathSource := GetProcessedFilePath(rawFilepathSource, installPath, gameId)
+					filepathDestination := GetProcessedFilePath(rawFilepathDestination, installPath, gameId)
 
 					filepathSourceGlob, _ := filepath.Glob(filepathSource)
 					if filepathSourceGlob == nil {
@@ -308,6 +322,9 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 				}
 			}
 		}
+
+		progress++
+		WriteProgress(progress, installPath, gameId)
 	}
 
 	return nil

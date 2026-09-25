@@ -31,13 +31,17 @@ func Install() *cobra.Command {
 				return fmt.Errorf("Invalid output type: '%v'", outputStyle)
 			}
 
-			gameScript, err := script.GetVersionedScript(args[0], server)
+			fullScript, err := script.GetScript(args[0], server)
 			if err != nil {
 				return err
 			}
 
-			scriptVars := script.ParseScriptVariables(args[0], gameScript)
-			gameDirectory := scriptVars["dir"]
+			gameScript, err := script.GetVersionedScriptFromFullScript(args[0], fullScript)
+			if err != nil {
+				return err
+			}
+
+			scriptVars := script.ParseScriptVariables(args[0], fullScript)
 
 			if !force {
 				err = VerifyAvailableSize(gameScript, installPath)
@@ -46,22 +50,26 @@ func Install() *cobra.Command {
 				}
 			}
 
-			err = script.RunScript(gameScript, force, installPath, resumeline, outputStyle)
+			gameId := script.GetGameId(args[0])
+
+			os.MkdirAll(filepath.Join(installPath, gameId), 0755)
+
+			err = script.RunScript(gameScript, force, installPath, resumeline, outputStyle, args[0])
 			if err != nil {
 				return err
 			}
 
-			varsToWrite, err := json.Marshal(scriptVars)
+			env, err := json.Marshal(scriptVars)
 			if err != nil {
 				return err
 			}
 
-			localScriptFile, err := os.Create(filepath.Join(script.GetProcessedFilePath(gameDirectory, installPath), ".maraudervars"))
+			localScriptFile, err := os.Create(filepath.Join(installPath, gameId, ".marauder.env"))
 			if err != nil {
 				return err
 			}
 
-			localScriptFile.Write(varsToWrite)
+			localScriptFile.Write(env)
 			localScriptFile.Close()
 
 			return nil

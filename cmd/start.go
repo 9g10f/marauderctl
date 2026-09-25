@@ -27,7 +27,7 @@ func Start() *cobra.Command {
 				return errors.New("Unable to start the game, no EXE was found in the script variables")
 			}
 
-			exePath := script.GetProcessedFilePath(exe, installPath)
+			exePath := script.GetProcessedFilePath(exe, installPath, script.GetGameId(args[0]))
 
 			exeCmd := exec.Command(exePath)
 			
