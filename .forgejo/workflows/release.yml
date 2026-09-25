@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: codeberg-medium
+    runs-on: codeberg-small
 
     steps:
       - name: Check out tagged source
