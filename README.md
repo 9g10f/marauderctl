@@ -27,7 +27,7 @@ marauderctl is the CLI backend for Marauder Launcher. You can use it to install 
 ## Installation
 You can install `marauderctl` through Go if you have it installed:
 ```
-go install https://codeberg.org/9g10f/marauderctl@latest
+go install codeberg.org/9g10f/marauderctl@latest
 ```
 
 ## Usage
