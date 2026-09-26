@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -11,9 +10,10 @@ import (
 
 func Query() *cobra.Command {
 	var server string
+	var installPath string
 
 	cmd := &cobra.Command{
-		Use: "query <game-id>@[game-version] <query-param:script|name|latest-version|dir|exe|max-size|size>",
+		Use: "query <game-id>@[game-version] <query-param:script|latest-version|*>",
 		Short: "Get information about a game",
 		Args: cobra.ExactArgs(2),
 		SilenceUsage: true,
@@ -26,13 +26,6 @@ func Query() *cobra.Command {
 				}
 
 				fmt.Println(strings.Join(gameScript, "\n"))
-			case "name":
-				gameScript, err := script.GetScript(args[0], server)
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["name"])
 			case "latest-version":
 				gameScript, err := script.GetScript(args[0], server)
 				if err != nil {
@@ -40,42 +33,20 @@ func Query() *cobra.Command {
 				}
 
 				fmt.Println(script.ParseGameLatestVersion(gameScript))
-			case "dir":
-				gameScript, err := script.GetScript(args[0], server)
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["dir"])
-			case "exe":
-				gameScript, err := script.GetScript(args[0], server)
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["exe"])
-			case "max-size":
-				gameScript, err := script.GetScript(args[0], server)
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["max-size"])
-			case "size":
-				gameScript, err := script.GetScript(args[0], server)
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(script.ParseScriptVariables(args[0], gameScript)["size"])
 			default:
-				return errors.New("Invalid query parameter")
+				vars, err := script.ParseLocalScriptVariables(args[0], installPath, server)
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(vars[args[1]])
 			}
 
 			return nil
 		},
 	}
 
+	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path with game installation")
 	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install gameScripts")
 
 	return cmd
