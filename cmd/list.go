@@ -15,6 +15,7 @@ func List() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "list",
 		Short: "List all installed games",
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var l []string
 

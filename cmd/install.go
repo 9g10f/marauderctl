@@ -12,7 +12,7 @@ import (
 )
 
 func VerifyAvailableSize(script []string, installPath string) error {
-	return nil // TODO: Implement disk scanning
+	return nil
 }
 
 func Install() *cobra.Command {
@@ -25,6 +25,7 @@ func Install() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "install <game-id>@[game-version]",
 		Short: "Install a game",
+		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {

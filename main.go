@@ -1,12 +1,14 @@
 package main
 
 import (
+	"os"
+
 	"codeberg.org/9g10f/marauderctl/cmd"
 )
 
 func main() {
 	err := cmd.MarauderCtl()
 	if err != nil {
-		panic(err)
+		os.Exit(1)
 	}
 }

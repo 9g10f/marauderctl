@@ -2,6 +2,7 @@ package script
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -30,6 +31,10 @@ func GetScript(game string, server string) ([]string, error) {
 			return nil, err
 		}
 		defer r.Body.Close()
+
+		if r.StatusCode != 200 {
+			return nil, fmt.Errorf("Error while downloading install script: response code was %v", r.StatusCode)
+		}
 
 		data, err := io.ReadAll(r.Body)
 		if err != nil {

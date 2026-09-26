@@ -14,6 +14,7 @@ func Uninstall() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "uninstall <game-id>@[game-version]",
 		Short: "Uninstall a game",
+		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return os.RemoveAll(script.GetGameFolder(installPath, server, args[0]))
@@ -21,7 +22,7 @@ func Uninstall() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
-	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path for game installation")
+	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path with game installation")
 
 	return cmd
 }

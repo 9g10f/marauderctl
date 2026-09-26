@@ -16,6 +16,7 @@ func Query() *cobra.Command {
 		Use: "query <game-id>@[game-version] <query-param:script|name|latest-version|dir|exe|max-size|size>",
 		Short: "Get information about a game",
 		Args: cobra.ExactArgs(2),
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch args[1] {
 			case "script":

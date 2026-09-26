@@ -32,7 +32,7 @@ func Download(downloadURL string, installPath string, gameId string) error {
 		return err
 	}
 
-	_, err = io.Copy(file, r.Body) // TODO: Get live progress
+	_, err = io.Copy(file, r.Body)
 	if err != nil {
 		file.Close()
 		return err

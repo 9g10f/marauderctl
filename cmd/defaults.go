@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func DEFAULTINSTALLPATH() string {
@@ -10,7 +11,7 @@ func DEFAULTINSTALLPATH() string {
 		homeDir = "."
 	}
 
-	return homeDir + "/Marauder/Games"
+	return filepath.Join(homeDir, "Marauder", "Games")
 }
 
 func DEFAULTSERVER() string {

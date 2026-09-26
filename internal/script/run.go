@@ -105,7 +105,7 @@ func RunScript(script []string, force bool, installPath string, resumeline int, 
 							"7z",
 							"x",
 							source,
-							"-ponline-fix.me", // TODO: Needs to be customizable in the future
+							"-ponline-fix.me",
 							"-y",
 						)
 
