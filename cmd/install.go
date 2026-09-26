@@ -2,16 +2,43 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/disk"
 	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
-func VerifyAvailableSize(script []string, installPath string) error {
+func VerifyAvailableSize(game string, installPath string, server string) error {
+	freeSpace, err := disk.GetFreeSpace(installPath)
+	if err != nil {
+		return err
+	}
+
+	vars, err := script.ParseLocalScriptVariables(game, installPath, server)
+	if err != nil {
+		return err
+	}
+
+	maxSize, ok := vars["max-size"]
+	if !ok {
+		return nil
+	}
+
+	maxSizeI, err := strconv.Atoi(maxSize)
+	if err != nil {
+		return err
+	}
+
+	if freeSpace < maxSizeI {
+		return errors.New("No space left on device")
+	}
+
 	return nil
 }
 
@@ -45,7 +72,7 @@ func Install() *cobra.Command {
 			scriptVars := script.ParseScriptVariables(args[0], fullScript)
 
 			if !force {
-				err = VerifyAvailableSize(gameScript, installPath)
+				err = VerifyAvailableSize(args[0], installPath, server)
 				if err != nil {
 					return err
 				}
