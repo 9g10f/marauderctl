@@ -1,3 +1,5 @@
+//go:build unix
+
 package start
 
 import (
@@ -195,37 +197,14 @@ func ProtonRun(gameExe string, game string, installPath string, server string, p
 
 	env := os.Environ()
 
-	steamCompatDataPath, ok := vars["steam-compat-data-path"]
-	if ok {
-		env = append(env, "STEAM_COMPAT_DATA_PATH=" + steamCompatDataPath)
-	} else {
-		env = append(env, "STEAM_COMPAT_DATA_PATH=" + filepath.Join(homeDir, ".local", "share", "marauder", "compat", gameId))
-	}
-
-	steamCompatClientInstallPath, ok := vars["steam-compat-client-install-path"]
-	if ok {
-		env = append(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH=" + steamCompatClientInstallPath)
-	} else {
-		env = append(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH=" + filepath.Join(homeDir, ".local", "share", "Steam"))
-	}
+	env = append(env, "STEAM_COMPAT_DATA_PATH=" + filepath.Join(homeDir, ".local", "share", "marauder", "compat", gameId))
+	env = append(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH=" + filepath.Join(homeDir, ".local", "share", "Steam"))
+	env = append(env, "PROTON_LOG=1")
+	env = append(env, "PROTON_LOG_DIR=" + filepath.Join(homeDir, ".local", "share", "marauder", "logs"))
 
 	steamAppId, ok := vars["steam-app-id"]
 	if ok {
 		env = append(env, "STEAM_COMPAT_APP_ID=" + steamAppId)
-	}
-
-	protonLog, ok := vars["proton-log"]
-	if ok {
-		env = append(env, "PROTON_LOG=" + protonLog)
-	} else {
-		env = append(env, "PROTON_LOG=1")
-	}
-
-	protonLogDir, ok := vars["proton-log-dir"]
-	if ok {
-		env = append(env, "PROTON_LOG_DIR=" + protonLogDir)
-	} else {
-		env = append(env, "PROTON_LOG_DIR=" + filepath.Join(homeDir, ".local", "share", "marauder", "logs"))
 	}
 
 	cmd.Env = env

@@ -1,3 +1,5 @@
+//go:build unix
+
 package cmd
 
 import (
@@ -5,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"syscall"
 
 	"codeberg.org/9g10f/marauderctl/internal/script"
 	"codeberg.org/9g10f/marauderctl/internal/start"
@@ -73,7 +76,7 @@ func Start() *cobra.Command {
 
 			go func() {
 				<-signals
-				start.Kill(exeCmd.Process)
+				syscall.Kill(-exeCmd.Process.Pid, syscall.SIGINT)
 			}()
 
 			err = exeCmd.Wait()
