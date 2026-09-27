@@ -27,10 +27,10 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
-				defenition := strings.Split(strings.Join(cmd[1:], ""), "=")
+				definition := strings.Split(strings.Join(cmd[1:], ""), "=")
 
-				variableName := defenition[0]
-				variableValue := strings.Join(defenition[1:], "=")
+				variableName := definition[0]
+				variableValue := strings.Join(definition[1:], "=")
 
 				vars[variableName] = variableValue
 			}
@@ -57,10 +57,10 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
-				defenition := strings.Split(strings.Join(cmd[1:], ""), "=")
+				definition := strings.Split(strings.Join(cmd[1:], ""), "=")
 
-				variableName := defenition[0]
-				variableValue := strings.Join(defenition[1:], "=")
+				variableName := definition[0]
+				variableValue := strings.Join(definition[1:], "=")
 
 				vars[variableName] = variableValue
 			}
