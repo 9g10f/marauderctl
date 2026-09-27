@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"github.com/buildkite/shellwords"
 )
 
@@ -43,39 +44,15 @@ func CountVersions(script []string) int {
 	return count
 }
 
-func GetGameVersion(game string) string {
-	var version string
-
-	if !strings.Contains(game, "@") {
-		version = "latest"
-	} else {
-		version = strings.Split(game, "@")[1]
-	}
-
-	return version
-}
-
-func GetGameId(game string) string {
-	var gameId string
-
-	if !strings.Contains(game, "@") {
-		gameId = game
-	} else {
-		gameId = strings.Split(game, "@")[0]
-	}
-
-	return gameId
-}
-
-func GetVersionedScript(game string, server string) ([]string, error) {
+func GetVersionedScript(gameMeta cstructs.GameMeta) ([]string, error) {
 	var script []string
 
-	fullScript, err := GetScript(game, server)
+	fullScript, err := GetScript(gameMeta)
 	if err != nil {
 		return nil, err
 	}
 
-	gameVersion := GetGameVersion(game)
+	gameVersion := gameMeta.GetVersion()
 	if gameVersion == "latest" {
 		gameVersion = ParseGameLatestVersion(fullScript)
 	}
@@ -103,10 +80,10 @@ func GetVersionedScript(game string, server string) ([]string, error) {
 	}
 }
 
-func GetVersionedScriptFromFullScript(game string, fullScript []string) ([]string, error) {
+func GetVersionedScriptFromFullScript(fullScript []string, gameMeta cstructs.GameMeta) ([]string, error) {
 	var script []string
 
-	gameVersion := GetGameVersion(game)
+	gameVersion := gameMeta.GetVersion()
 	if gameVersion == "latest" {
 		gameVersion = ParseGameLatestVersion(fullScript)
 	}
@@ -132,4 +109,8 @@ func GetVersionedScriptFromFullScript(game string, fullScript []string) ([]strin
 	} else {
 		return script, nil
 	}
+}
+
+func GetProcessedFilePath(path string, gameMeta cstructs.GameMeta) string {
+	return strings.ReplaceAll(path, "$path", gameMeta.GetDirectory())
 }

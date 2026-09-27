@@ -9,21 +9,24 @@ import (
 	"strconv"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"codeberg.org/9g10f/marauderctl/internal/disk"
 	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
-func VerifyAvailableSize(game string, installPath string, server string) error {
-	freeSpace, err := disk.GetFreeSpace(installPath)
+func VerifyAvailableSize(gameMeta cstructs.GameMeta) error {
+	freeSpace, err := disk.GetFreeSpace(filepath.VolumeName(gameMeta.InstallPath))
 	if err != nil {
 		return err
 	}
 
-	vars, err := script.ParseLocalScriptVariables(game, installPath, server)
+	fullScript, err := script.GetScript(gameMeta)
 	if err != nil {
 		return err
 	}
+
+	vars := script.ParseScriptVariables(fullScript, gameMeta)
 
 	maxSize, ok := vars["max-size"]
 	if !ok {
@@ -55,32 +58,44 @@ func Install() *cobra.Command {
 		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			gameMeta := cstructs.GameMeta{
+				Game: args[0],
+				InstallPath: installPath,
+				Server: server,
+			}
+
+			installFlags := cstructs.InstallFlags{
+				Force: force,
+				ResumeLine: resumeline,
+				OutputStyle: outputStyle,
+			}
+
 			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
 				return fmt.Errorf("Invalid output type: '%v'", outputStyle)
 			}
 
-			fullScript, err := script.GetScript(args[0], server)
+			fullScript, err := script.GetScript(gameMeta)
 			if err != nil {
 				return err
 			}
 
-			gameScript, err := script.GetVersionedScriptFromFullScript(args[0], fullScript)
+			gameScript, err := script.GetVersionedScriptFromFullScript(fullScript, gameMeta)
 			if err != nil {
 				return err
 			}
 
-			scriptVars := script.ParseScriptVariables(args[0], fullScript)
+			scriptVars := script.ParseScriptVariables(fullScript, gameMeta)
 
 			if !force {
-				err = VerifyAvailableSize(args[0], installPath, server)
+				err = VerifyAvailableSize(gameMeta)
 				if err != nil {
 					return err
 				}
 			}
 
-			os.MkdirAll(script.GetGameFolder(installPath, server, args[0]), 0755)
+			os.MkdirAll(gameMeta.GetDirectory(), 0755)
 
-			err = script.RunScript(gameScript, force, installPath, resumeline, outputStyle, server, args[0])
+			err = script.RunScript(gameScript, installFlags, gameMeta)
 			if err != nil {
 				return err
 			}
@@ -90,7 +105,7 @@ func Install() *cobra.Command {
 				return err
 			}
 
-			localScriptFile, err := os.Create(filepath.Join(script.GetGameFolder(installPath, server, args[0]), ".marauder.env"))
+			localScriptFile, err := os.Create(gameMeta.GetEnvFile())
 			if err != nil {
 				return err
 			}
@@ -106,7 +121,7 @@ func Install() *cobra.Command {
 	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path for game installation")
 	cmd.Flags().BoolVarP(&force, "force", "f", false, "Ignore warnings and proceed with installation regardless")
 	cmd.Flags().IntVarP(&resumeline, "resume-line", "r", 0, "Resume installation from a specified install script line number")
-	cmd.Flags().StringVarP(&outputStyle, "output", "o", "default", "Output style")
+	cmd.Flags().StringVarP(&outputStyle, "output-style", "o", "default", "Output style")
 
 	return cmd
 }

@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"codeberg.org/9g10f/marauderctl/internal/script"
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +17,13 @@ func Uninstall() *cobra.Command {
 		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return os.RemoveAll(script.GetGameFolder(installPath, server, args[0]))
+			gameMeta := cstructs.GameMeta{
+				Game: args[0],
+				InstallPath: installPath,
+				Server: server,
+			}
+			
+			return os.RemoveAll(gameMeta.GetDirectory())
 		},
 	}
 

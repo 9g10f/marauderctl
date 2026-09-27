@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
@@ -18,23 +19,29 @@ func Query() *cobra.Command {
 		Args: cobra.ExactArgs(2),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			gameMeta := cstructs.GameMeta{
+				Game: args[0],
+				InstallPath: installPath,
+				Server: server,
+			}
+			
 			switch args[1] {
 			case "script":
-				gameScript, err := script.GetVersionedScript(args[0], server)
+				gameScript, err := script.GetVersionedScript(gameMeta)
 				if err != nil {
 					return err
 				}
 
 				fmt.Println(strings.Join(gameScript, "\n"))
 			case "latest-version":
-				gameScript, err := script.GetScript(args[0], server)
+				gameScript, err := script.GetScript(gameMeta)
 				if err != nil {
 					return err
 				}
 
 				fmt.Println(script.ParseGameLatestVersion(gameScript))
 			default:
-				vars, err := script.ParseLocalScriptVariables(args[0], installPath, server)
+				vars, err := script.ParseLocalScriptVariables(gameMeta)
 				if err != nil {
 					return err
 				}

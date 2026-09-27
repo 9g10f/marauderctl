@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"codeberg.org/9g10f/marauderctl/internal/script"
 )
 
@@ -170,7 +171,7 @@ func GetProton() (string, error) {
 	return filepath.Join(protons[0], "proton"), nil
 }
 
-func ProtonRun(gameExe string, game string, installPath string, server string, proton string) (*exec.Cmd, error) {
+func ProtonRun(gameExe string, proton string, gameMeta cstructs.GameMeta) (*exec.Cmd, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -178,7 +179,7 @@ func ProtonRun(gameExe string, game string, installPath string, server string, p
 
 	cmd := exec.Command(proton, "run", gameExe)
 
-	gameId := script.GetGameId(game)
+	gameId := gameMeta.GetId()
 
 	err = os.MkdirAll(filepath.Join(homeDir, ".local", "share", "marauder", "compat", gameId), 0755)
 	if err != nil {
@@ -190,7 +191,7 @@ func ProtonRun(gameExe string, game string, installPath string, server string, p
 		return nil, err
 	}
 
-	vars, err := script.ParseLocalScriptVariables(game, installPath, server)
+	vars, err := script.ParseLocalScriptVariables(gameMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -209,8 +210,6 @@ func ProtonRun(gameExe string, game string, installPath string, server string, p
 
 	cmd.Env = env
 	cmd.Dir = filepath.Dir(gameExe)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 
 	return cmd, nil
 }

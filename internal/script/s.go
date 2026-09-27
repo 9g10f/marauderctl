@@ -7,26 +7,26 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 )
 
-func GetScript(game string, server string) ([]string, error) {
+func GetScript(gameMeta cstructs.GameMeta) ([]string, error) {
 	var fullScript []string
 
-	gameId := GetGameId(game)
-
-	if strings.Count(game, "@") > 1 {
+	if strings.Count(gameMeta.Game, "@") > 1 {
 		return nil, errors.New("Invalid game field format")
 	}
 
-	if before, ok := strings.CutPrefix(server, "file://"); ok {
-		data, err := os.ReadFile(before + gameId)
+	if before, ok := strings.CutPrefix(gameMeta.Server, "file://"); ok {
+		data, err := os.ReadFile(before + gameMeta.GetId())
 		if err != nil {
 			return nil, err
 		}
 
 		fullScript = strings.Split(string(data), "\n")
 	} else {
-		r, err := http.Get(server + gameId)
+		r, err := http.Get(gameMeta.Server + gameMeta.GetId())
 		if err != nil {
 			return nil, err
 		}

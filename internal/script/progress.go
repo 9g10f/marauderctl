@@ -5,10 +5,12 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 )
 
-func WriteProgress(progress int, installPath string, server string, game string) error {
-	progressFile, err := os.Create(filepath.Join(GetGameFolder(installPath, server, game), ".marauder.iprogress"))
+func WriteProgress(progress int, gameMeta cstructs.GameMeta) error {
+	progressFile, err := os.Create(filepath.Join(gameMeta.GetDirectory(), ".marauder.iprogress"))
 	if err != nil {
 		return err
 	}
@@ -18,8 +20,8 @@ func WriteProgress(progress int, installPath string, server string, game string)
 	return nil
 }
 
-func GetProgress(installPath string, server string, game string) (int, error) {
-	progressFile, err := os.Open(filepath.Join(GetGameFolder(installPath, server, game), ".marauder.iprogress"))
+func GetProgress(gameMeta cstructs.GameMeta) (int, error) {
+	progressFile, err := os.Open(filepath.Join(gameMeta.GetDirectory(), ".marauder.iprogress"))
 	if err != nil {
 		return 0, err
 	}

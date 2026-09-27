@@ -11,7 +11,7 @@ func DEFAULTINSTALLPATH() string {
 		homeDir = "."
 	}
 
-	return filepath.Join(homeDir, "Marauder", "Games")
+	return filepath.Join(homeDir, "Marauder Games")
 }
 
 func DEFAULTSERVER() string {

@@ -13,11 +13,13 @@ import (
 	"syscall"
 	"time"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
+	"codeberg.org/9g10f/marauderctl/internal/logging"
 	"github.com/anacrolix/log"
 	"github.com/anacrolix/torrent"
 )
 
-func Download(downloadURL string, installPath string, gameId string) error {
+func Download(downloadURL string, gameMeta cstructs.GameMeta) error {
 	r, err := http.Get(downloadURL)
 	if err != nil {
 		return err
@@ -27,7 +29,7 @@ func Download(downloadURL string, installPath string, gameId string) error {
 	u, _ := url.Parse(downloadURL)
 	filename := path.Base(u.Path)
 
-	file, err := os.Create(filepath.Join(installPath, gameId, filename))
+	file, err := os.Create(filepath.Join(gameMeta.GetDirectory(), filename))
 	if err != nil {
 		return err
 	}
@@ -46,10 +48,20 @@ func Download(downloadURL string, installPath string, gameId string) error {
 	return nil
 }
 
-func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle string, game string, server string) error {
+func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger logging.Logger, gameMeta cstructs.GameMeta) error {
 	cfg := torrent.NewDefaultClientConfig()
-	cfg.DataDir = GetGameFolder(installPath, server, game)
-	cfg.Logger = log.Default.FilterLevel(log.Disabled)
+	cfg.DataDir = gameMeta.GetDirectory()
+	cfg.Logger = log.NewLogger()
+	cfg.Logger.SetHandlers(log.StreamHandler{
+		W: logger,
+		Fmt: func(r log.Record) []byte {
+			if !r.Level.LessThan(log.Warning) {
+				return []byte(r.Msg.String())
+			} else {
+				return []byte{}
+			}
+		},
+	})
 
 	client, err := torrent.NewClient(cfg)
 	if err != nil {
@@ -117,11 +129,6 @@ func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle s
 	}
 
 	client.WaitAll()
-
-	// Wait one second before dropping the torrent
-	// Dropping the torrent stops seeding
-	time.Sleep(1 * time.Second)
-
 	t.Drop()
 
 	errs := client.Close()
@@ -129,7 +136,7 @@ func DownloadTorrentMagnet(downloadURL string, installPath string, outputStyle s
 		return errors.Join(errs...)
 	}
 
-	torrentFile, err := filepath.Glob(filepath.Join(GetGameFolder(installPath, server, game), ".torrent*"))
+	torrentFile, err := filepath.Glob(filepath.Join(gameMeta.GetDirectory(), ".torrent*"))
 	if err != nil {
 		return err
 	}

@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"github.com/buildkite/shellwords"
 )
 
-func ParseScriptVariables(game string, fullScript []string) map[string]string {
+func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[string]string {
 	var script []string
 
 	vars := map[string]string{}
 
-	gameVersion := GetGameVersion(game)
+	gameVersion := gameMeta.GetVersion()
 	if gameVersion == "latest" {
 		gameVersion = ParseGameLatestVersion(fullScript)
 	}
@@ -70,8 +70,8 @@ func ParseScriptVariables(game string, fullScript []string) map[string]string {
 	return vars
 }
 
-func ParseLocalScriptVariables(game string, installPath string, server string) (map[string]string, error) {
-	marauderEnvFile, err := os.Open(filepath.Join(GetGameFolder(installPath, server, game), ".marauder.env"))
+func ParseLocalScriptVariables(gameMeta cstructs.GameMeta) (map[string]string, error) {
+	marauderEnvFile, err := os.Open(gameMeta.GetEnvFile())
 	if err != nil {
 		return nil, err
 	}

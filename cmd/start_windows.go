@@ -5,10 +5,15 @@ package cmd
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"os/signal"
+	"path/filepath"
+	"sync/atomic"
+	"time"
 
+	"codeberg.org/9g10f/marauderctl/internal/cstructs"
+	"codeberg.org/9g10f/marauderctl/internal/logging"
 	"codeberg.org/9g10f/marauderctl/internal/script"
-	"codeberg.org/9g10f/marauderctl/internal/start"
 	"github.com/spf13/cobra"
 )
 
@@ -22,36 +27,65 @@ func Start() *cobra.Command {
 		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			vars, err := script.ParseLocalScriptVariables(args[0], installPath, server)
+			gameMeta := cstructs.GameMeta{
+				Game: args[0],
+				InstallPath: installPath,
+				Server: server,
+			}
+
+			st := time.Now()
+
+			logfile, err := logging.GetRuntimeLogFile(st, gameMeta)
 			if err != nil {
 				return err
+			}
+
+			logger := logging.Logger{
+				File: logfile,
+				Location: "game",
+			}
+
+			mainLogger := logging.Logger{
+				File: logfile,
+				Location: "main",
+			}
+			
+			vars, err := script.ParseLocalScriptVariables(gameMeta)
+			if err != nil {
+				return mainLogger.LogError(err, "0")
 			}
 
 			exe, ok := vars["exe"]
 			if !ok {
-				return errors.New("Unable to start the game, no EXE was found in the script variables")
+				return mainLogger.LogError(errors.New("Unable to start the game, no EXE was found in the script variables"), "1")
 			}
 
-			exePath := script.GetProcessedFilePath(exe, installPath, server, args[0])
+			exePath := script.GetProcessedFilePath(exe, gameMeta)
 
-			exeCmd := start.RawRun(exePath)
+			command := exec.Command(exePath)
+			command.Dir = filepath.Dir(exePath)
+			command.Stdout = logger
+			command.Stderr = logger
 
-			err = exeCmd.Start()
+			err = command.Start()
 			if err != nil {
-				return err
+				return mainLogger.LogError(err, "2")
 			}
 
 			signals := make(chan os.Signal, 1)
 			signal.Notify(signals, os.Interrupt)
 
+			var userInterrupted atomic.Bool
+
 			go func() {
 				<-signals
-				exeCmd.Process.Kill()
+				userInterrupted.Store(true)
+				command.Process.Kill()
 			}()
 
-			err = exeCmd.Wait()
-			if err != nil {
-				return err
+			err = command.Wait()
+			if err != nil && !userInterrupted.Load() {
+				return mainLogger.LogError(err, "3")
 			}
 
 			signal.Stop(signals)
