@@ -1,5 +1,6 @@
 set name = "Nine-Ball Roulette"
 set exe = "$path/Nine_Ball_Roulette.exe"
+set steam-app-id = "3376250"
 
 @v1.1.5
 set max-size = 1389526877
