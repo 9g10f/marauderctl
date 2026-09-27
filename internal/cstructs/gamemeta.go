@@ -40,6 +40,10 @@ func (g GameMeta) GetEnvFile() string {
 	return filepath.Join(g.GetDirectory(), ".marauder.env")
 }
 
+func (g GameMeta) GetVersionFile() string {
+	return filepath.Join(g.GetDirectory(), ".marauder.version")
+}
+
 type InstallFlags struct {
 	Force 		bool
 	ResumeLine	int

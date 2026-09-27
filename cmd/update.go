@@ -4,48 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
-	"codeberg.org/9g10f/marauderctl/internal/disk"
 	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
-func VerifyAvailableSize(gameMeta cstructs.GameMeta) error {
-	freeSpace, err := disk.GetFreeSpace(filepath.VolumeName(gameMeta.InstallPath))
-	if err != nil {
-		return err
-	}
-
-	fullScript, err := script.GetScript(gameMeta)
-	if err != nil {
-		return err
-	}
-
-	vars := script.ParseScriptVariables(fullScript, gameMeta)
-
-	maxSize, ok := vars["max-size"]
-	if !ok {
-		return nil
-	}
-
-	maxSizeI, err := strconv.Atoi(maxSize)
-	if err != nil {
-		return err
-	}
-
-	if freeSpace < maxSizeI {
-		return errors.New("No space left on device")
-	}
-
-	return nil
-}
-
-func Install() *cobra.Command {
+func Update() *cobra.Command {
 	var server string
 	var installPath string
 	var force bool // Ignores the device's remaining size for installation
@@ -53,8 +22,8 @@ func Install() *cobra.Command {
 	var outputStyle string // Output style: Default, JSON, Silent
 
 	cmd := &cobra.Command{
-		Use: "install <game-id>@[game-version]",
-		Short: "Install a game",
+		Use: "update <game-id>",
+		Short: "Update an installed game to the latest version",
 		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -74,10 +43,40 @@ func Install() *cobra.Command {
 				OutputStyle: outputStyle,
 			}
 
+			if gameMeta.GetVersion() != "latest" {
+				return errors.New("You can only update the latest version of a game")
+			}
+
 			fullScript, err := script.GetScript(gameMeta)
 			if err != nil {
 				return err
 			}
+
+			latestVersion := script.ParseGameLatestVersion(fullScript)
+
+			// If there already exists a version file we check if it's up to date
+			// If there isn't a version file then either the game was never installed (in which case we install it) or it was installing and crashed (which also means to install it by resuming)
+			if _, err := os.Stat(gameMeta.GetVersionFile()); err == nil {
+				versionFile, err := os.Open(gameMeta.GetVersionFile())
+				if err != nil {
+					return err
+				}
+
+				versionBytes, err := io.ReadAll(versionFile)
+				if err != nil {
+					return err
+				}
+
+				version := string(versionBytes)
+
+				if version == latestVersion {
+					return errors.New("Game is up to date")
+				}
+			} else if !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+
+			os.RemoveAll(gameMeta.GetDirectory())
 
 			gameScript, err := script.GetVersionedScriptFromFullScript(fullScript, gameMeta)
 			if err != nil {
@@ -118,24 +117,19 @@ func Install() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer envFile.Close()
 
-			_, err = envFile.Write(env)
+			envFile.Write(env)
+			envFile.Close()
+
+			versionFile, err := os.Create(gameMeta.GetVersionFile())
 			if err != nil {
 				return err
 			}
+			defer versionFile.Close()
 
-			if gameMeta.GetVersion() == "latest" {
-				versionFile, err := os.Create(gameMeta.GetVersionFile())
-				if err != nil {
-					return err
-				}
-				defer versionFile.Close()
-
-				_, err = versionFile.Write([]byte(script.ParseGameLatestVersion(fullScript)))
-				if err != nil {
-					return err
-				}
+			_, err = versionFile.Write([]byte(script.ParseGameLatestVersion(fullScript)))
+			if err != nil {
+				return err
 			}
 
 			return nil
