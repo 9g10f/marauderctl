@@ -58,6 +58,10 @@ func Install() *cobra.Command {
 		SilenceUsage: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
+				return fmt.Errorf("Invalid output type: '%v'", outputStyle)
+			}
+
 			gameMeta := cstructs.GameMeta{
 				Game: args[0],
 				InstallPath: installPath,
@@ -68,10 +72,6 @@ func Install() *cobra.Command {
 				Force: force,
 				ResumeLine: resumeline,
 				OutputStyle: outputStyle,
-			}
-
-			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
-				return fmt.Errorf("Invalid output type: '%v'", outputStyle)
 			}
 
 			fullScript, err := script.GetScript(gameMeta)
@@ -93,7 +93,16 @@ func Install() *cobra.Command {
 				}
 			}
 
-			os.MkdirAll(gameMeta.GetDirectory(), 0755)
+			err = os.MkdirAll(gameMeta.GetDirectory(), 0755)
+			if err != nil {
+				return err
+			}
+
+			ipathFile, err := os.Create(filepath.Join(installPath, ".marauder.ipath"))
+			if err != nil {
+				return err
+			}
+			ipathFile.Close()
 
 			err = script.RunScript(gameScript, installFlags, gameMeta)
 			if err != nil {

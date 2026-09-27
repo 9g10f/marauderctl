@@ -80,7 +80,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					}
 
 					if installFlags.OutputStyle == "default" {
-						fmt.Printf("\r\033[2KDownloading game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+						fmt.Printf("\r\033[2KDownloading game files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 					} else if installFlags.OutputStyle == "json" {
 						fmt.Printf("\r\033[2K{\"task\": \"Downloading game files\", \"details\": \"Downloading %v\", \"progress\": 0, \"eta\": 0}", downloadURL)
 					}
@@ -106,7 +106,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					}
 
 					if installFlags.OutputStyle == "default" {
-						fmt.Printf("\r\033[2KDownloading game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+						fmt.Printf("\r\033[2KDownloading game files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 					} else if installFlags.OutputStyle == "json" {
 						fmt.Printf("\r\033[2K{\"task\": \"Downloading game files\", \"details\": \"Downloading %v\", \"progress\": 100, \"eta\": 0}\n", downloadURL)
 					}
@@ -128,7 +128,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					for _, source := range trueFilepathGlob {
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KUnzipping game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KUnzipping game files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
@@ -163,7 +163,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						}
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KUnzipping game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KUnzipping game files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
@@ -187,7 +187,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					for _, source := range trueFilepathGlob {
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KRemoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KRemoving files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
@@ -225,7 +225,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						}
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KRemoving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KRemoving files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
@@ -266,7 +266,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					for _, source := range sources {
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KPatching game files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KPatching game files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}", source, destination)
 						}
@@ -279,7 +279,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						}
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KPatching game files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KPatching game files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 100, \"eta\": 0}\n", source, destination)
 						}
@@ -321,7 +321,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					destinationInfo, err := os.Stat(destination)
 					if os.IsNotExist(err) {
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KMoving files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}", sources[0], destination)
 						}
@@ -333,7 +333,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						}
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KMoving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 100, \"eta\": 0}\n", sources[0], destination)
 						}
@@ -353,7 +353,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						target := filepath.Join(destination, filepath.Base(source))
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KMoving files ...   0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KMoving files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}", source, target)
 						}
@@ -368,7 +368,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						mainLogger.Log(fmt.Sprintf("Finished moving '%v' to '%v'", source, target), "INFO")
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KMoving files ...   100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KMoving files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 100, \"eta\": 0}\n", source, target)
 						}
