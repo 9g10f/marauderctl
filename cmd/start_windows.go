@@ -39,6 +39,7 @@ func Start() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			defer logfile.Close()
 
 			logger := logging.Logger{
 				File: logfile,

@@ -66,7 +66,7 @@ func GetInstallLogFile(st time.Time, gameMeta cstructs.GameMeta) (*os.File, erro
 	var file *os.File
 
 	if _, err := os.Stat(filePath); err == nil {
-		file, err = os.Open(filePath)
+		file, err = os.OpenFile(filePath, os.O_APPEND | os.O_WRONLY, 0644)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +95,7 @@ func GetRuntimeLogFile(st time.Time, gameMeta cstructs.GameMeta) (*os.File, erro
 	var file *os.File
 
 	if _, err := os.Stat(filePath); err == nil {
-		file, err = os.Open(filePath)
+		file, err = os.OpenFile(filePath, os.O_APPEND | os.O_WRONLY, 0644)
 		if err != nil {
 			return nil, err
 		}

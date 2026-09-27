@@ -39,6 +39,10 @@ func Start() *cobra.Command {
 			st := time.Now()
 
 			logfile, err := logging.GetRuntimeLogFile(st, gameMeta)
+			if err != nil {
+				return err
+			}
+			defer logfile.Close()
 
 			gameLogger := logging.Logger{
 				File: logfile,

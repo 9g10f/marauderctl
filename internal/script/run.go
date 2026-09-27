@@ -25,6 +25,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 	if err != nil {
 		return err
 	}
+	defer logfile.Close()
 
 	torrentLogger := logging.Logger{
 		File: logfile,
