@@ -19,7 +19,7 @@ func Update() *cobra.Command {
 	var installPath string
 	var force bool // Ignores the device's remaining size for installation
 	var resumeline int
-	var outputStyle string // Output style: Default, JSON, Silent
+	var outputStyle string // Default, JSON, Silent
 
 	cmd := &cobra.Command{
 		Use: "update <game-id>",

@@ -15,5 +15,5 @@ func DEFAULTINSTALLPATH() string {
 }
 
 func DEFAULTSERVER() string {
-	return "https://marauder.k.vu/s/"
+	return "https://marauder.k.vu/"
 }

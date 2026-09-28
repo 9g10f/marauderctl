@@ -1,6 +1,6 @@
 package cmd
 
-var Version = "0.0.15"
+var Version = "0.0.16"
 
 func MarauderCtl() error {
 	Root.AddCommand(Install())
@@ -9,6 +9,7 @@ func MarauderCtl() error {
 	Root.AddCommand(Uninstall())
 	Root.AddCommand(List())
 	Root.AddCommand(Update())
+	Root.AddCommand(Search())
 
 	err := Root.Execute()
 	if err != nil {

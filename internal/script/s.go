@@ -1,27 +1,27 @@
 package script
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 )
 
 func Search(text string, server string) ([]string, error) {
-	searchURL := fmt.Sprintf("search?txt=%v")
+	searchURL := "search?txt=" + text
 
-	r, err := http.Get(path.Join(server, searchURL))
+	r, err := http.Get(server + searchURL)
 	if err != nil {
 		return nil, err
 	}
 	defer r.Body.Close()
 
 	if r.StatusCode != 200 {
-		return nil, fmt.Errorf("Error while downloading install script: response code was %v", r.StatusCode)
+		return nil, fmt.Errorf("Error while searching games: response code was %v", r.StatusCode)
 	}
 
 	data, err := io.ReadAll(r.Body)
@@ -29,7 +29,17 @@ func Search(text string, server string) ([]string, error) {
 		return nil, err
 	}
 
-	return strings.Split(string(data), "\n"), nil
+	var sResponse cstructs.SResponseSearch
+	err = json.Unmarshal(data, &sResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	if sResponse.Error != nil {
+		return nil, errors.New(*sResponse.Error)
+	}
+
+	return sResponse.Results, nil
 }
 
 func GetScript(gameMeta cstructs.GameMeta) ([]string, error) {
@@ -37,7 +47,7 @@ func GetScript(gameMeta cstructs.GameMeta) ([]string, error) {
 		return nil, errors.New("Invalid game field format")
 	}
 
-	r, err := http.Get(path.Join(gameMeta.Server, gameMeta.GetId()))
+	r, err := http.Get(gameMeta.Server + gameMeta.GetId())
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +62,18 @@ func GetScript(gameMeta cstructs.GameMeta) ([]string, error) {
 		return nil, err
 	}
 
-	fullScript := strings.Split(string(data), "\n")
+	var sResponse cstructs.SResponseS
+
+	err = json.Unmarshal(data, &sResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	if sResponse.Error != nil {
+		return nil, errors.New(*sResponse.Error)
+	}
+
+	fullScript := strings.Split(sResponse.Script, "\n")
 
 	fullScript = ReformatScript(fullScript)
 

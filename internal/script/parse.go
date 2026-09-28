@@ -10,6 +10,31 @@ import (
 	"github.com/buildkite/shellwords"
 )
 
+func ParseGlobalScriptVariables(fullScript []string) map[string]string {
+	vars := map[string]string{}
+
+	for _, line := range fullScript {
+		cmd, _ := shellwords.Split(line)
+
+		if len(cmd) > 0 {
+			if cmd[0] == "set" {
+				definition := strings.Split(strings.Join(cmd[1:], ""), "=")
+
+				variableName := definition[0]
+				variableValue := strings.Join(definition[1:], "=")
+
+				vars[variableName] = variableValue
+			}
+		}
+
+		if IsVersionDelimiter(line) {
+			break
+		}
+	}
+	
+	return vars
+}
+
 func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[string]string {
 	var script []string
 
