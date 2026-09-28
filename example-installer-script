@@ -1,4 +1,7 @@
 set name = "Nine-Ball Roulette"
+set description = "This will be the most thrilling pool game you have ever played. Join up to 3 of your friends in this exciting pool roulette game! Eliminate each other with pool until only one person is left."
+set developer = "WaveBox Labs"
+set publisher = "WaveBox Labs"
 set exe = "$path/Nine_Ball_Roulette.exe"
 set steam-app-id = "3376250"
 

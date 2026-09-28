@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,8 +16,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func root(p string) string {
+	p = filepath.Clean(p)
+	for {
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+		parent := filepath.Dir(p)
+		if parent == p {
+			return p
+		}
+		p = parent
+	}
+}
+
 func VerifyAvailableSize(gameMeta cstructs.GameMeta) error {
-	freeSpace, err := disk.GetFreeSpace(filepath.VolumeName(gameMeta.InstallPath))
+	freeSpace, err := disk.GetFreeSpace(root(gameMeta.InstallPath))
 	if err != nil {
 		return err
 	}
@@ -38,7 +53,8 @@ func VerifyAvailableSize(gameMeta cstructs.GameMeta) error {
 		return err
 	}
 
-	if freeSpace < maxSizeI {
+	// Give +10 MB of room
+	if freeSpace < (maxSizeI + int(math.Pow(10, 7))) {
 		return errors.New("No space left on device")
 	}
 

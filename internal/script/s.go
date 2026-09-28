@@ -5,48 +5,58 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
+	"path"
 	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 )
 
-func GetScript(gameMeta cstructs.GameMeta) ([]string, error) {
-	var fullScript []string
+func Search(text string, server string) ([]string, error) {
+	searchURL := fmt.Sprintf("search?txt=%v")
 
+	r, err := http.Get(path.Join(server, searchURL))
+	if err != nil {
+		return nil, err
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode != 200 {
+		return nil, fmt.Errorf("Error while downloading install script: response code was %v", r.StatusCode)
+	}
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.Split(string(data), "\n"), nil
+}
+
+func GetScript(gameMeta cstructs.GameMeta) ([]string, error) {
 	if strings.Count(gameMeta.Game, "@") > 1 {
 		return nil, errors.New("Invalid game field format")
 	}
 
-	if before, ok := strings.CutPrefix(gameMeta.Server, "file://"); ok {
-		data, err := os.ReadFile(before + gameMeta.GetId())
-		if err != nil {
-			return nil, err
-		}
-
-		fullScript = strings.Split(string(data), "\n")
-	} else {
-		r, err := http.Get(gameMeta.Server + gameMeta.GetId())
-		if err != nil {
-			return nil, err
-		}
-		defer r.Body.Close()
-
-		if r.StatusCode != 200 {
-			return nil, fmt.Errorf("Error while downloading install script: response code was %v", r.StatusCode)
-		}
-
-		data, err := io.ReadAll(r.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		fullScript = strings.Split(string(data), "\n")
+	r, err := http.Get(path.Join(gameMeta.Server, gameMeta.GetId()))
+	if err != nil {
+		return nil, err
 	}
+	defer r.Body.Close()
+
+	if r.StatusCode != 200 {
+		return nil, fmt.Errorf("Error while downloading install script: response code was %v", r.StatusCode)
+	}
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fullScript := strings.Split(string(data), "\n")
 
 	fullScript = ReformatScript(fullScript)
 
-	err := ValidateScript(fullScript)
+	err = ValidateScript(fullScript)
 	if err != nil {
 		return nil, err
 	}
