@@ -47,6 +47,10 @@ You can see all the games locally installed with:
 ```
 marauderctl list
 ```
+You can update the latest version of your installed games with:
+```
+marauderctl update <game-id>
+```
 And you can uninstall games with:
 ```
 marauderctl uninstall <game-id>@[game-version/latest]
@@ -58,7 +62,25 @@ What this looks like in practice:
 > $ marauderctl install 0
 > $ marauderctl start 0
 > $ marauderctl list
+> $ marauderctl update 0
 > $ marauderctl uninstall 0
+> ```
+Which is the same as 
+> ```
+> $ marauderctl query 0@latest script
+> $ marauderctl install 0@latest
+> $ marauderctl start 0@latest
+> $ marauderctl list
+> $ marauderctl update 0
+> $ marauderctl uninstall 0@latest
+> ```
+Or specify a game version
+> ```
+> $ marauderctl query 0@v1.1.5 script
+> $ marauderctl install 0@v1.1.5
+> $ marauderctl start 0@v1.1.5
+> $ marauderctl list
+> $ marauderctl uninstall 0@v1.1.5
 > ```
 
 ## License
