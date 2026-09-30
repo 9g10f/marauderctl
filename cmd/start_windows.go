@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -17,6 +18,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// The start commands lets you start an installed game from it's game-id and game-version
+
 func Start() *cobra.Command {
 	var server string
 	var installPath string
@@ -25,6 +28,7 @@ func Start() *cobra.Command {
 		Use: "start <game-id>@[game-version]",
 		Short: "Start a game",
 		SilenceUsage: true,
+		SilenceErrors: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameMeta := cstructs.GameMeta{
@@ -35,6 +39,7 @@ func Start() *cobra.Command {
 
 			st := time.Now()
 
+			// marauderctl saves runtime logs
 			logfile, err := logging.GetRuntimeLogFile(st, gameMeta)
 			if err != nil {
 				return err
@@ -45,33 +50,33 @@ func Start() *cobra.Command {
 				File: logfile,
 				Location: "game",
 			}
-
-			mainLogger := logging.Logger{
-				File: logfile,
-				Location: "main",
-			}
 			
 			vars, err := script.ParseLocalScriptVariables(gameMeta)
 			if err != nil {
-				return mainLogger.LogError(err, "0")
+				return err
 			}
 
+			// Even tho all enviroment variables are optional for install you can't start games that have no 'exe' variable
 			exe, ok := vars["exe"]
 			if !ok {
-				return mainLogger.LogError(errors.New("Unable to start the game, no EXE was found in the script variables"), "1")
+				return errors.New("Start: Unable to start the game, no EXE was found in the script variables")
 			}
 
 			exePath := script.GetProcessedFilePath(exe, gameMeta)
 
 			command := exec.Command(exePath)
 			command.Dir = filepath.Dir(exePath)
+
+			// Redirect STDOUT & STDERR to the log
 			command.Stdout = logger
 			command.Stderr = logger
 
 			err = command.Start()
 			if err != nil {
-				return mainLogger.LogError(err, "2")
+				return errors.New("Start: Unable to start game: " + err.Error())
 			}
+
+			// While the game is running marauderctl redirects interrupt signals to the game
 
 			signals := make(chan os.Signal, 1)
 			signal.Notify(signals, os.Interrupt)
@@ -82,11 +87,12 @@ func Start() *cobra.Command {
 				<-signals
 				userInterrupted.Store(true)
 				command.Process.Kill()
+				fmt.Println("Game killed")
 			}()
 
 			err = command.Wait()
 			if err != nil && !userInterrupted.Load() {
-				return mainLogger.LogError(err, "3")
+				return errors.New("Start: Game crashed: " + err.Error())
 			}
 
 			signal.Stop(signals)

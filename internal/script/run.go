@@ -18,9 +18,11 @@ import (
 // Its value (32) is fixed by the Windows API
 const ERROR_SHARING_VIOLATION syscall.Errno = 32
 
+// Runs the versioned script
 func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cstructs.GameMeta) error {
 	st := time.Now()
 
+	// Log the installation to a file
 	logfile, err := logging.GetInstallLogFile(st, gameMeta)
 	if err != nil {
 		return err
@@ -37,16 +39,13 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 		Location: "7z",
 	}
 
-	mainLogger := logging.Logger{
-		File: logfile,
-		Location: "main",
-	}
-
+	// Set torrent setting to close mapped files
 	_, ok := os.LookupEnv("TORRENT_STORAGE_DEFAULT_FILE_IO")
 	if !ok {
-		os.Setenv("TORRENT_STORAGE_DEFAULT_FILE_IO", "classic") // Set torrent setting to close mapped files
+		os.Setenv("TORRENT_STORAGE_DEFAULT_FILE_IO", "classic")
 	}
 
+	// Resume progress
 	progress, err := GetProgress(gameMeta)
 	if err != nil {
 		progress = 0
@@ -54,21 +53,31 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 		installFlags.ResumeLine = progress + 1
 	}
 	
-	WriteProgress(progress, gameMeta)
+	err = WriteProgress(progress, gameMeta)
+	if err != nil {
+		return err
+	}
 
 	for linen, line := range script {
 		if linen + 1 < installFlags.ResumeLine {
 			continue
 		}
 
-		command, _ := shellwords.Split(line)
+		command, err := shellwords.Split(line)
+		if err != nil {
+			return fmt.Errorf("RunScript: Unable to split command: '%v'", command)
+		}
 		
 		if len(command) > 0 { // Skip blank lines
 			switch command[0] {
 			case "set":
 				// Variables are handled by ParseScriptVariables
 				progress++
-				WriteProgress(progress, gameMeta)
+
+				err := WriteProgress(progress, gameMeta)
+				if err != nil {
+					return err
+				}
 
 				continue
 			case "download":
@@ -86,23 +95,15 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					}
 
 					if strings.HasPrefix(downloadURL, "magnet:") {
-						mainLogger.Log(fmt.Sprintf("Downloading game files from '%v' with BitTorrent", downloadURL), "INFO")
-
 						err := DownloadTorrentMagnet(downloadURL, installFlags.OutputStyle, torrentLogger, gameMeta)
 						if err != nil {
-							return mainLogger.LogError(err, "0")
+							return err
 						}
-
-						mainLogger.Log(fmt.Sprintf("Finished downloading game files from '%v' with BitTorrent", downloadURL), "INFO")
 					} else {
-						mainLogger.Log(fmt.Sprintf("Downloading game files from '%v'", downloadURL), "INFO")
-
 						err := Download(downloadURL, gameMeta)
 						if err != nil {
-							return mainLogger.LogError(err, "1")
+							return err
 						}
-
-						mainLogger.Log(fmt.Sprintf("Finished downloading game files from '%v'", downloadURL), "INFO")
 					}
 
 					if installFlags.OutputStyle == "default" {
@@ -121,9 +122,13 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					trueFilepath := GetProcessedFilePath(rawFilepath, gameMeta)
 
-					trueFilepathGlob, _ := filepath.Glob(trueFilepath)
+					trueFilepathGlob, err := filepath.Glob(trueFilepath)
+					if err != nil {
+						return fmt.Errorf("RunScript: unzip: Invalid glob syntax: '%v'", trueFilepath)
+					}
+
 					if trueFilepathGlob == nil {
-						return mainLogger.LogError(fmt.Errorf("File(s) not found: '%v'", trueFilepath), "2")
+						return fmt.Errorf("RunScript: unzip: No matches for glob: '%v'", trueFilepath)
 					}
 
 					for _, source := range trueFilepathGlob {
@@ -132,8 +137,6 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
-
-						mainLogger.Log(fmt.Sprintf("Unzipping '%v' using 7z", source), "INFO")
 
 						command := exec.Command(
 							"7z",
@@ -151,14 +154,14 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						if err != nil {
 							exitError, ok := err.(*exec.ExitError)
 							if !ok {
-								return mainLogger.LogError(err, "3")
+								return fmt.Errorf("RunScript: unzip: Error while running 7z: %v", err)
 							}
 
 							code := exitError.ExitCode()
 
 							// We don't throw an error when the exit code is 2 because that's the exit code 7z throws when even tho it still unzipped the files there were some warnings (e.g. Unsupported Method)
 							if code != 2 {
-								return mainLogger.LogError(err, "4")
+								return fmt.Errorf("RunScript: unzip: Error while running 7z: %v", err)
 							}
 						}
 
@@ -167,8 +170,6 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
-
-						mainLogger.Log(fmt.Sprintf("Finished unzipping '%v' using 7z", source), "INFO")
 					}
 				}
 			case "rm":
@@ -180,9 +181,13 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					trueFilepath := GetProcessedFilePath(rawFilepath, gameMeta)
 
-					trueFilepathGlob, _ := filepath.Glob(trueFilepath)
+					trueFilepathGlob, err := filepath.Glob(trueFilepath)
+					if err != nil {
+						return fmt.Errorf("RunScript: rm: Invalid glob syntax: '%v'", trueFilepath)
+					}
+
 					if trueFilepathGlob == nil {
-						return mainLogger.LogError(fmt.Errorf("File(s) not found: '%v'", trueFilepath), "5")
+						return fmt.Errorf("RunScript: rm: No matches for glob: '%v'", trueFilepath)
 					}
 
 					for _, source := range trueFilepathGlob {
@@ -191,8 +196,6 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
-
-						mainLogger.Log(fmt.Sprintf("Removing '%v'", source), "INFO")
 
 						var err error
 						success := false
@@ -214,14 +217,16 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 										time.Sleep(250 * time.Millisecond)
 										continue
 									}
+								} else {
+									return fmt.Errorf("RunScript: rm: Unable to remove path: '%v': %v", source, err)
 								}
+							} else {
+								return fmt.Errorf("RunScript: rm: Unable to remove path: '%v': %v", source, err)
 							}
-
-							return mainLogger.LogError(err, "6")
 						}
 
 						if !success {
-							return mainLogger.LogError(err, "7")
+							return fmt.Errorf("RunScript: rm: Unable to remove path: '%v': %v", source, err)
 						}
 
 						if installFlags.OutputStyle == "default" {
@@ -229,8 +234,6 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Removing files\", \"details\": \"Removing %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
-
-						mainLogger.Log(fmt.Sprintf("Finished removing '%v'", source), "INFO")
 					}
 				}
 			case "rsynca":
@@ -247,18 +250,26 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					filepathSource := GetProcessedFilePath(rawFilepathSource, gameMeta)
 					filepathDestination := GetProcessedFilePath(rawFilepathDestination, gameMeta)
 
-					filepathSourceGlob, _ := filepath.Glob(filepathSource)
-					if filepathSourceGlob == nil {
-						return mainLogger.LogError(fmt.Errorf("File(s) not found: '%v'", filepathSource), "8")
+					filepathSourceGlob, err := filepath.Glob(filepathSource)
+					if err != nil {
+						return fmt.Errorf("RunScript: rsynca: Invalid glob syntax: '%v'", filepathSource)
 					}
 
-					filepathDestinationGlob, _ := filepath.Glob(filepathDestination)
+					if filepathSourceGlob == nil {
+						return fmt.Errorf("RunScript: rsynca: No matches for glob: '%v'", filepathSource)
+					}
+
+					filepathDestinationGlob, err := filepath.Glob(filepathDestination)
+					if err != nil {
+						return fmt.Errorf("RunScript: rsynca: Invalid glob syntax: '%v'", filepathDestination)
+					}
+
 					if filepathDestinationGlob == nil {
-						return mainLogger.LogError(fmt.Errorf("File(s) not found: '%v'", filepathDestination), "9")
+						return fmt.Errorf("RunScript: rsynca: No matches for glob: '%v'", filepathDestination)
 					}
 
 					if len(filepathDestinationGlob) != 1 {
-						return mainLogger.LogError(fmt.Errorf("Too many destinations: '%v'", filepathDestination), "10")
+						return fmt.Errorf("RunScript: rsynca: More than one destination for glob: '%v'", filepathDestination)
 					}
 
 					sources := filepathSourceGlob
@@ -271,11 +282,9 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 0, \"eta\": 0}", source, destination)
 						}
 
-						mainLogger.Log(fmt.Sprintf("Rsyncing '%v' on '%v'", source, destination), "INFO")
-
 						err := RsyncA(source, destination)
 						if err != nil {
-							return mainLogger.LogError(err, "11")
+							return err
 						}
 
 						if installFlags.OutputStyle == "default" {
@@ -283,8 +292,6 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Patching game files\", \"details\": \"Patching %v on %v\", \"progress\": 100, \"eta\": 0}\n", source, destination)
 						}
-
-						mainLogger.Log(fmt.Sprintf("Finshed rsyncing '%v' on '%v'", source, destination), "INFO")
 					}
 				}
 			case "mv":
@@ -301,18 +308,26 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					filepathSource := GetProcessedFilePath(rawFilepathSource, gameMeta)
 					filepathDestination := GetProcessedFilePath(rawFilepathDestination, gameMeta)
 
-					filepathSourceGlob, _ := filepath.Glob(filepathSource)
-					if filepathSourceGlob == nil {
-						return mainLogger.LogError(fmt.Errorf("File(s) not found: '%v'", filepathSource), "12")
+					filepathSourceGlob, err := filepath.Glob(filepathSource)
+					if err != nil {
+						return fmt.Errorf("RunScript: mv: Invalid glob syntax: '%v'", filepathSource)
 					}
 
-					filepathDestinationGlob, _ := filepath.Glob(filepathDestination)
+					if filepathSourceGlob == nil {
+						return fmt.Errorf("RunScript: mv: No matches for glob: '%v'", filepathSource)
+					}
+
+					filepathDestinationGlob, err := filepath.Glob(filepathDestination)
+					if err != nil {
+						return fmt.Errorf("RunScript: mv: Invalid glob syntax: '%v'", filepathDestination)
+					}
+
 					if filepathDestinationGlob == nil {
-						return mainLogger.LogError(fmt.Errorf("File(s) not found: '%v'", filepathDestination), "13")
+						return fmt.Errorf("RunScript: mv: No matches for glob: '%v'", filepathDestination)
 					}
 
 					if len(filepathDestinationGlob) != 1 {
-						return mainLogger.LogError(fmt.Errorf("Too many destinations: '%v'", filepathDestination), "14")
+						return fmt.Errorf("RunScript: mv: More than one destination for glob: '%v'", filepathDestination)
 					}
 
 					sources := filepathSourceGlob
@@ -326,10 +341,9 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}", sources[0], destination)
 						}
 
-						mainLogger.Log(fmt.Sprintf("Moving '%v' to '%v'", sources[0], destination), "INFO")
-
-						if err := os.Rename(sources[0], destination); err != nil {
-							return mainLogger.LogError(err, "15")
+						err := os.Rename(sources[0], destination)
+						if err != nil {
+							return fmt.Errorf("RunScript: mv: Unable to rename paths: '%v' -> '%v': %v", sources[0], destination, err)
 						}
 
 						if installFlags.OutputStyle == "default" {
@@ -338,15 +352,13 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 100, \"eta\": 0}\n", sources[0], destination)
 						}
 
-						mainLogger.Log(fmt.Sprintf("Finished moving '%v' to '%v'", sources[0], destination), "INFO")
-
 						continue
 					} else if err != nil {
-						return mainLogger.LogError(err, "16")
+						return fmt.Errorf("RunScript: mv: Unable to inspect path: '%v'", destination)
 					}
 
 					if !destinationInfo.IsDir() {
-						return mainLogger.LogError(fmt.Errorf("Destination is not a directory: '%v'", destination), "17")
+						return fmt.Errorf("RunScript: mv: Destination is not a directory")
 					}
 
 					for _, source := range sources {
@@ -358,14 +370,10 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 							fmt.Printf("\r\033[2K{\"task\": \"Moving files\", \"details\": \"Moving %v to %v\", \"progress\": 0, \"eta\": 0}", source, target)
 						}
 
-						mainLogger.Log(fmt.Sprintf("Moving '%v' to '%v'", source, target), "INFO")
-
 						err = os.Rename(source, target)
 						if err != nil {
-							return mainLogger.LogError(err, "18")
+							return fmt.Errorf("RunScript: mv: Unable to rename paths: '%v' -> '%v': %v", source, target, err)
 						}
-
-						mainLogger.Log(fmt.Sprintf("Finished moving '%v' to '%v'", source, target), "INFO")
 
 						if installFlags.OutputStyle == "default" {
 							fmt.Printf("\r\033[2KMoving files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
@@ -378,7 +386,11 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 		}
 
 		progress++
-		WriteProgress(progress, gameMeta)
+		
+		err = WriteProgress(progress, gameMeta)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

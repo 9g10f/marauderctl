@@ -22,7 +22,7 @@
 marauderctl is the CLI backend for Marauder Launcher. You can use it to install & run regular or pirated games through a CLI. marauderctl relies on custom scripts to install games with our main server (storage for the scripts) being [marauder.k.vu](https://marauder.k.vu).
 
 > [!IMPORTANT]
-> This project is still under heavy development and has not even reached v0.1, use it with caution.
+> This project is still under heavy development, use it with caution.
 
 ## Installation
 You can install `marauderctl` through Go if you have it installed:
@@ -31,7 +31,11 @@ go install codeberg.org/9g10f/marauderctl@latest
 ```
 
 ## Usage
-You can use `marauderctl` to install games through it's `game-id` and it's `game-version` on your server, but it's best to first always check the scripts for malicious code:
+You can use `marauderctl` to install games through it's `game-id` and it's `game-version` on your server. You can search for the `game-id` from it's name or anything that's related to it using:
+```
+marauderctl search <search-term>
+```
+Now that you know it's `game-id` you can install it. But it's best to first always check the scripts for malicious code:
 ```
 marauderctl query <game-id>@[game-version/latest] script
 ```
@@ -58,6 +62,7 @@ marauderctl uninstall <game-id>@[game-version/latest]
 
 What this looks like in practice:
 > ```
+> $ marauderctl search "Backrooms"
 > $ marauderctl query 0 script
 > $ marauderctl install 0
 > $ marauderctl start 0
@@ -67,6 +72,7 @@ What this looks like in practice:
 > ```
 Which is the same as 
 > ```
+> $ marauderctl search "Backrooms"
 > $ marauderctl query 0@latest script
 > $ marauderctl install 0@latest
 > $ marauderctl start 0@latest
@@ -76,12 +82,45 @@ Which is the same as
 > ```
 Or specify a game version
 > ```
-> $ marauderctl query 0@v1.1.5 script
-> $ marauderctl install 0@v1.1.5
-> $ marauderctl start 0@v1.1.5
+> $ marauderctl search "Backrooms"
+> $ marauderctl query 0@06012026 script
+> $ marauderctl install 0@06012026
+> $ marauderctl start 0@06012026
 > $ marauderctl list
-> $ marauderctl uninstall 0@v1.1.5
+> $ marauderctl uninstall 0@06012026
 > ```
+
+If you have any doubts about how to use `marauderctl` you can check the `--help` flag:
+```
+$ marauderctl --help
+The CLI backend for Marauder Launcher
+
+Usage:
+  marauderctl [command]
+
+Available Commands:
+  help        Help about any command
+  install     Install a game
+  list        List all installed games
+  query       Get information about a game
+  search      Search for a game
+  start       Start a game
+  uninstall   Uninstall a game
+  update      Update an installed game to the latest version
+
+Flags:
+  -h, --help      help for marauderctl
+  -v, --version   version for marauderctl
+
+Use "marauderctl [command] --help" for more information about a command.
+```
+
+## Making Install Scripts / Contributing
+You can contribute to the Marauder Project by making install scripts for your favourite games and/or making your owner script servers.
+
+You can find out how to make scripts and host servers in the [`marauders` repository](https://codeberg.org/9g10f/marauders).
+
+All help is much appreciated and improves everyone's experience.
 
 ## License
 marauderctl is free and licensed under the [GNU General Public License v3.0](LICENSE).

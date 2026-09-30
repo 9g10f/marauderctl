@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// The query command lets you fetch information or environment variables about a specified game
+
 func Query() *cobra.Command {
 	var server string
 	var installPath string
@@ -18,6 +20,7 @@ func Query() *cobra.Command {
 		Short: "Get information about a game",
 		Args: cobra.ExactArgs(2),
 		SilenceUsage: true,
+		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameMeta := cstructs.GameMeta{
 				Game: args[0],
@@ -27,7 +30,12 @@ func Query() *cobra.Command {
 			
 			switch args[1] {
 			case "script":
-				gameScript, err := script.GetVersionedScript(gameMeta)
+				fullScript, err := script.GetScript(gameMeta)
+				if err != nil {
+					return err
+				}
+
+				gameScript, err := script.GetVersionedScript(fullScript, gameMeta)
 				if err != nil {
 					return err
 				}

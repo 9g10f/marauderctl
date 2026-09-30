@@ -8,5 +8,6 @@ var Root = &cobra.Command{
 	Use: "marauderctl",
 	Version: Version,
 	Short: "The CLI backend for Marauder Launcher",
+	SilenceErrors: true,
 	CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
 }

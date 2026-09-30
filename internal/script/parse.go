@@ -2,6 +2,7 @@ package script
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -10,10 +11,12 @@ import (
 	"github.com/buildkite/shellwords"
 )
 
+// Returns only the global environment variables
 func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 	vars := map[string]string{}
 
 	for _, line := range fullScript {
+		// We can ignore this error because it is always checked by ValidateScript beforehand
 		cmd, _ := shellwords.Split(line)
 
 		if len(cmd) > 0 {
@@ -35,6 +38,7 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 	return vars
 }
 
+// Returns all environment variables (global and versioned)
 func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[string]string {
 	var script []string
 
@@ -48,6 +52,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 	// Process global variables and create versioned script
 	stop := false
 	for linen, line := range fullScript {
+		// We can ignore this error because it is always checked by ValidateScript beforehand
 		cmd, _ := shellwords.Split(line)
 
 		if len(cmd) > 0 {
@@ -78,6 +83,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 
 	// Process versioned variables with a higher priority
 	for _, line := range script {
+		// We can ignore this error because it is always checked by ValidateScript beforehand
 		cmd, _ := shellwords.Split(line)
 
 		if len(cmd) > 0 {
@@ -95,27 +101,30 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 	return vars
 }
 
+// Returns the local environment variables of a specified game
+// The local environment variables are the mix of the globals and the versioned ones (prioritized)
 func ParseLocalScriptVariables(gameMeta cstructs.GameMeta) (map[string]string, error) {
 	marauderEnvFile, err := os.Open(gameMeta.GetEnvFile())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ParseLocalScriptVariables: Unable to open environment file: '%v'", gameMeta.GetEnvFile())
 	}
 
 	env, err := io.ReadAll(marauderEnvFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ParseLocalScriptVariables: Unable to read environment file: '%v'", gameMeta.GetEnvFile())
 	}
 
 	var vars map[string]string
 
 	err = json.Unmarshal(env, &vars)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ParseLocalScriptVariables: Unable to parse environment variables")
 	}
 
 	return vars, nil
 }
 
+// Returns all game versions
 func ParseGameVersions(script []string) []string {
 	var versions []string
 
@@ -130,6 +139,7 @@ func ParseGameVersions(script []string) []string {
 	return versions
 }
 
+// Returns the latest version of a certain game
 func ParseGameLatestVersion(script []string) string {
 	nGameVersions := CountVersions(script)
 

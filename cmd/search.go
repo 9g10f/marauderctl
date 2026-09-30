@@ -2,23 +2,33 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"codeberg.org/9g10f/marauderctl/internal/script"
 	"github.com/spf13/cobra"
 )
 
+// The search command lets you use non-static servers for searching game-ids from keywords
+
 func Search() *cobra.Command {
 	var server string
 	var outputStyle string // Default, JSON, Silent
 
 	cmd := &cobra.Command{
-		Use: "search <*>",
+		Use: "search <text>",
 		Short: "Search for a game",
 		SilenceUsage: true,
+		SilenceErrors: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if 'output-style' is valid
+			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
+				return fmt.Errorf("Search: Invalid output type: '%v'", outputStyle)
+			}
+			
 			results, err := script.Search(args[0], server)
 			if err != nil {
 				return err
@@ -33,13 +43,16 @@ func Search() *cobra.Command {
 
 					vars := script.ParseGlobalScriptVariables(fullScript)
 
-					name := vars["name"]
-					if name != "" {
+					// The default output type doesn't only print the game-ids
+					// It prints the game-id, name and the description (if those environment variables are set by the script writer)
+
+					name, ok := vars["name"]
+					if ok {
 						name = " | " + name
 					}
 
-					description := vars["description"]
-					if description != "" {
+					description, ok := vars["description"]
+					if ok {
 						description = " | " + description
 					}
 
@@ -48,7 +61,7 @@ func Search() *cobra.Command {
 			} else if outputStyle == "json" {
 				raw, err := json.Marshal(results)
 				if err != nil {
-					return err
+					return errors.New("Search: Unable to parse results")
 				}
 
 				fmt.Println(string(raw))

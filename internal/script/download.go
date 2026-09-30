@@ -19,38 +19,41 @@ import (
 	"github.com/anacrolix/torrent"
 )
 
+// Downloads the file from 'downloadURL' into the game's install directory
 func Download(downloadURL string, gameMeta cstructs.GameMeta) error {
 	r, err := http.Get(downloadURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Download: Unable to make request to download URL: '%v': %v", downloadURL, err)
 	}
 	defer r.Body.Close()
 
-	u, _ := url.Parse(downloadURL)
+	u, err := url.Parse(downloadURL)
+	if err != nil {
+		return fmt.Errorf("Download: Unable to parse URL: '%v'", downloadURL)
+	}
+
 	filename := path.Base(u.Path)
 
 	file, err := os.Create(filepath.Join(gameMeta.GetDirectory(), filename))
 	if err != nil {
-		return err
+		return fmt.Errorf("Download: Unable to create file: '%v'", filepath.Join(gameMeta.GetDirectory(), filename))
 	}
+	defer file.Close()
 
 	_, err = io.Copy(file, r.Body)
 	if err != nil {
-		file.Close()
-		return err
-	}
-
-	err = file.Close()
-	if err != nil {
-		return err
+		return fmt.Errorf("Download: Unable to write to file: '%v'", filepath.Join(gameMeta.GetDirectory(), filename))
 	}
 
 	return nil
 }
 
+// Downloads the file(s) from 'downloadURL' into the game's install directory through BitTorrent
 func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger logging.Logger, gameMeta cstructs.GameMeta) error {
 	cfg := torrent.NewDefaultClientConfig()
 	cfg.DataDir = gameMeta.GetDirectory()
+
+	// Replace anacrolix's wanky logger for a simpler one
 	cfg.Logger = log.NewLogger()
 	cfg.Logger.SetHandlers(log.StreamHandler{
 		W: logger,
@@ -65,17 +68,22 @@ func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger loggin
 
 	client, err := torrent.NewClient(cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("DownloadTorrentMagnet: Unable to create client")
 	}
 
 	t, err := client.AddMagnet(downloadURL)
 	if err != nil {
-		client.Close()
-		return err
+		closeErrs := client.Close()
+		if closeErrs != nil {
+			return fmt.Errorf("DownloadTorrentMagnet: Error while closing client: %v", errors.Join(closeErrs...))
+		}
+
+		return fmt.Errorf("DownloadTorrentMagnet: Unable to add magnet: '%v'", downloadURL)
 	}
 
 	<-t.GotInfo()
 
+	// Allow for clean interruption (although it usually works very poorly)
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -133,17 +141,19 @@ func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger loggin
 
 	errs := client.Close()
 	if len(errs) > 0 {
-		return errors.Join(errs...)
+		return fmt.Errorf("DownloadTorrentMagnet: Error while closing client: %v", errors.Join(errs...))
 	}
 
+	// anacrolix/torrent leaves a SQLite file behind with the torrent's info
 	torrentFile, err := filepath.Glob(filepath.Join(gameMeta.GetDirectory(), ".torrent*"))
 	if err != nil {
-		return err
+		return nil
 	}
 
+	// Remove the torrent info file
 	err = os.Remove(torrentFile[0])
 	if err != nil {
-		return err
+		return fmt.Errorf("DownloadTorrentMagnet: Unable to delete torrent file: %v", err)
 	}
 
 	return nil

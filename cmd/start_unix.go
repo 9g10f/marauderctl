@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -18,6 +19,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// The start commands lets you start an installed game from it's game-id and game-version
+// The Unix version supports Wine and Proton launching
+
 func Start() *cobra.Command {
 	var server string
 	var installPath string
@@ -28,8 +32,14 @@ func Start() *cobra.Command {
 		Use: "start <game-id>@[game-version]",
 		Short: "Start a game",
 		SilenceUsage: true,
+		SilenceErrors: true,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if 'compatibility-layer' is valid
+			if compatibilityLayer != "none" && compatibilityLayer != "wine" && compatibilityLayer != "proton" {
+				return fmt.Errorf("Start: Unsupported compatibility layer: '%v'", compatibilityLayer)
+			}
+
 			gameMeta := cstructs.GameMeta{
 				Game: args[0],
 				InstallPath: installPath,
@@ -38,34 +48,27 @@ func Start() *cobra.Command {
 
 			st := time.Now()
 
+			// marauderctl saves runtime logs
 			logfile, err := logging.GetRuntimeLogFile(st, gameMeta)
 			if err != nil {
 				return err
 			}
 			defer logfile.Close()
 
-			gameLogger := logging.Logger{
+			logger := logging.Logger{
 				File: logfile,
 				Location: "game",
 			}
 
-			mainLogger := logging.Logger{
-				File: logfile,
-				Location: "main",
-			}
-			
-			if compatibilityLayer != "none" && compatibilityLayer != "wine" && compatibilityLayer != "proton" {
-				return mainLogger.LogError(errors.New("Unsupported compatibility layer"), "0")
-			}
-
 			vars, err := script.ParseLocalScriptVariables(gameMeta)
 			if err != nil {
-				return mainLogger.LogError(err, "1")
+				return err
 			}
 
+			// Even tho all enviroment variables are optional for install you can't start games that have no 'exe' variable
 			exe, ok := vars["exe"]
 			if !ok {
-				return mainLogger.LogError(errors.New("Unable to start the game, no EXE was found in the script variables"), "2")
+				return errors.New("Start: Unable to start the game, no EXE was found in the script variables")
 			}
 
 			exePath := script.GetProcessedFilePath(exe, gameMeta)
@@ -80,9 +83,10 @@ func Start() *cobra.Command {
 			case "proton":
 				var proton string
 				if protonPath == "" {
+					// Find installed Proton versions and run the best one
 					proton, err = start.GetProton()
 					if err != nil {
-						return mainLogger.LogError(err, "3")
+						return err
 					}
 				} else {
 					proton = protonPath
@@ -90,17 +94,20 @@ func Start() *cobra.Command {
 
 				command, err = start.ProtonRun(exePath, proton, gameMeta)
 				if err != nil {
-					return mainLogger.LogError(err, "4")
+					return err
 				}
 			}
 
-			command.Stdout = gameLogger
-			command.Stderr = gameLogger
+			// Redirect STDOUT & STDERR to the log
+			command.Stdout = logger
+			command.Stderr = logger
 
 			err = command.Start()
 			if err != nil {
-				return mainLogger.LogError(err, "5")
+				return errors.New("Start: Unable to start game: " + err.Error())
 			}
+
+			// While the game is running marauderctl redirects interrupt signals to the game
 
 			signals := make(chan os.Signal, 1)
 			signal.Notify(signals, os.Interrupt)
@@ -111,11 +118,12 @@ func Start() *cobra.Command {
 				<-signals
 				userInterrupted.Store(true)
 				syscall.Kill(-command.Process.Pid, syscall.SIGINT)
+				fmt.Println("Game killed")
 			}()
 
 			err = command.Wait()
 			if err != nil && !userInterrupted.Load() {
-				return mainLogger.LogError(err, "6")
+				return errors.New("Start: Game crashed: " + err.Error())
 			}
 
 			signal.Stop(signals)

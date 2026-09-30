@@ -1,7 +1,7 @@
 package script
 
 import (
-	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,21 +11,21 @@ import (
 func RsyncA(source string, destination string) error {
 	sourceInfo, err := os.Stat(source)
 	if err != nil {
-		return err
+		return fmt.Errorf("RsyncA: Unable to inspect file: '%v'", source)
 	}
 
 	if !sourceInfo.IsDir() {
-		return errors.New("Source is not a directory")
+		return fmt.Errorf("RsyncA: Source is not a directory: '%v'", source)
 	}
 
 	err = os.MkdirAll(destination, sourceInfo.Mode().Perm())
 	if err != nil {
-		return err
+		return fmt.Errorf("RsyncA: Unable to create destination directory: %v", err)
 	}
 
 	entries, err := os.ReadDir(source)
 	if err != nil {
-		return err
+		return fmt.Errorf("RsyncA: Unable to list directory: '%v'", source)
 	}
 
 	for _, entry := range entries {
@@ -34,7 +34,7 @@ func RsyncA(source string, destination string) error {
 
 		info, err := entry.Info()
 		if err != nil {
-			return err
+			return fmt.Errorf("RsyncA: Unable to inspect file: '%v'", sourcePath)
 		}
 
 		if info.IsDir() {
@@ -48,30 +48,19 @@ func RsyncA(source string, destination string) error {
 
 		in, err := os.Open(sourcePath)
 		if err != nil {
-			return err
+			return fmt.Errorf("RsyncA: Unable to open file: '%v'", sourcePath)
 		}
+		defer in.Close()
 
 		out, err := os.Create(destinationPath)
 		if err != nil {
-			in.Close()
-			return err
+			return fmt.Errorf("RsyncA: Unable to create file: '%v'", destinationPath)
 		}
+		defer out.Close()
 
 		_, err = io.Copy(out, in)
 		if err != nil {
-			in.Close()
-			out.Close()
-			return err
-		}
-
-		err = in.Close()
-		if err != nil {
-			return err
-		}
-
-		err = out.Close()
-		if err != nil {
-			return err
+			return fmt.Errorf("RsyncA: Unable to write to file: '%v'", destinationPath)
 		}
 	}
 

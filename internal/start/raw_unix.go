@@ -8,6 +8,7 @@ import (
 	"syscall"
 )
 
+// Returns the command for running a specified game natively
 func RawRun(gameExe string) *exec.Cmd {
 	cmd := exec.Command(gameExe)
 	cmd.Dir = filepath.Dir(gameExe)
