@@ -33,6 +33,11 @@ func ValidateScript(script []string) error {
 				continue
 			}
 
+			if cmd[0][0] == '#' {
+				// Allow comments
+				continue
+			}
+
 			switch cmd[0] {
 			case "set":
 				// The 'set' command requires scripts to include whitespaces before and after the "=" character. If the script has the "=" character between the variable name and the variable value wihtout any whitespaces it will be parsed as being a single part (the name).

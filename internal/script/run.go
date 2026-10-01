@@ -69,6 +69,18 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 		}
 		
 		if len(command) > 0 { // Skip blank lines
+			// Allow comments
+			if command[0][0] == '#' {
+				progress++
+
+				err := WriteProgress(progress, gameMeta)
+				if err != nil {
+					return err
+				}
+
+				continue
+			}
+
 			switch command[0] {
 			case "set":
 				// Variables are handled by ParseScriptVariables
