@@ -11,7 +11,6 @@ import (
 
 // marauderctl remembers your install progress by steps
 // If you interrupt an installation you will resume from the step you left
-// The progress file gets deleted once the installation is successfully finished
 
 // Writes the progress to the progress file
 func WriteProgress(progress int, gameMeta cstructs.GameMeta) error {

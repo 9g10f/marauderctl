@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 	"codeberg.org/9g10f/marauderctl/internal/script"
@@ -176,21 +177,21 @@ func GetProtons() ([]string, error) {
 		// We can ignore these errors because they were checked in the for loop
 		v1, _ := ParseProtonVersion1(Protons1[i])
 		v2, _ := ParseProtonVersion1(Protons1[j])
-		return v1 < v2
+		return v1 > v2
 	})
 
 	sort.Slice(Protons3, func(i int, j int) bool {
 		// We can ignore these errors because they were checked in the for loop
 		v1, _ := ParseProtonVersion3(Protons3[i])
 		v2, _ := ParseProtonVersion3(Protons3[j])
-		return v1 < v2
+		return v1 > v2
 	})
 
 	sort.Slice(Protons5, func(i int, j int) bool {
 		// We can ignore these errors because they were checked in the for loop
 		v1, _ := ParseProtonVersion5(Protons5[i])
 		v2, _ := ParseProtonVersion5(Protons5[j])
-		return v1 < v2
+		return v1 > v2
 	})
 
 	return append(Protons1, append(Protons2, append(Protons3, append(Protons4, Protons5...)...)...)...), nil
@@ -263,6 +264,7 @@ func ProtonRun(gameExe string, proton string, gameMeta cstructs.GameMeta) (*exec
 
 	cmd.Env = env
 	cmd.Dir = filepath.Dir(gameExe)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	return cmd, nil
 }
