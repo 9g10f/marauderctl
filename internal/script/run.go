@@ -14,6 +14,33 @@ import (
 	"github.com/buildkite/shellwords"
 )
 
+func IsInInstallDirectory(path string, installDirectory string) (bool, error) {
+	installDirectoryAbs, err := filepath.Abs(installDirectory)
+	if err != nil {
+		return false, err
+	}
+
+	pathAbs, err := filepath.Abs(path)
+	if err != nil {
+		return false, err
+	}
+
+	rel, err := filepath.Rel(installDirectoryAbs, pathAbs)
+	if err != nil {
+		return false, err
+	}
+
+	if rel == "." {
+		return true, nil
+	}
+
+	if rel == ".." || strings.HasPrefix(rel, ".." + string(filepath.Separator)) {
+		return false, nil
+	}
+
+	return true, nil // TODO: Add proper error handling
+}
+
 // ERROR_SHARING_VIOLATION is not exported by the standard syscall package on Windows
 // Its value (32) is fixed by the Windows API
 const ERROR_SHARING_VIOLATION syscall.Errno = 32
@@ -144,6 +171,17 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					}
 
 					for _, source := range trueFilepathGlob {
+						if !installFlags.Force {
+							isInInstallDirectory, err := IsInInstallDirectory(source, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: unzip: Path is outside game directory: '%v'", source)
+							}
+						}
+
 						if installFlags.OutputStyle == "default" {
 							fmt.Printf("\r\033[2KUnzipping game files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
@@ -203,6 +241,17 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					}
 
 					for _, source := range trueFilepathGlob {
+						if !installFlags.Force {
+							isInInstallDirectory, err := IsInInstallDirectory(source, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: rm: Path is outside game directory: '%v'", source)
+							}
+						}
+
 						if installFlags.OutputStyle == "default" {
 							fmt.Printf("\r\033[2KRemoving files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
@@ -288,6 +337,26 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					destination := filepathDestinationGlob[0]
 
 					for _, source := range sources {
+						if !installFlags.Force {
+							isInInstallDirectory, err := IsInInstallDirectory(source, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: rsynca: Path is outside game directory: '%v'", source)
+							}
+
+							isInInstallDirectory, err = IsInInstallDirectory(destination, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: rsynca: Path is outside game directory: '%v'", destination)
+							}
+						}
+
 						if installFlags.OutputStyle == "default" {
 							fmt.Printf("\r\033[2KPatching game files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
@@ -347,6 +416,26 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					destinationInfo, err := os.Stat(destination)
 					if os.IsNotExist(err) {
+						if !installFlags.Force {
+							isInInstallDirectory, err := IsInInstallDirectory(sources[0], gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: mv: Path is outside game directory: '%v'", sources[0])
+							}
+
+							isInInstallDirectory, err = IsInInstallDirectory(destination, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: mv: Path is outside game directory: '%v'", destination)
+							}
+						}
+
 						if installFlags.OutputStyle == "default" {
 							fmt.Printf("\r\033[2KMoving files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
@@ -375,6 +464,26 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 
 					for _, source := range sources {
 						target := filepath.Join(destination, filepath.Base(source))
+
+						if !installFlags.Force {
+							isInInstallDirectory, err := IsInInstallDirectory(source, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: mv: Path is outside game directory: '%v'", source)
+							}
+
+							isInInstallDirectory, err = IsInInstallDirectory(target, gameMeta.GetDirectory())
+							if err != nil {
+								return err
+							}
+
+							if !isInInstallDirectory {
+								return fmt.Errorf("RunScript: mv: Path is outside game directory: '%v'", target)
+							}
+						}
 
 						if installFlags.OutputStyle == "default" {
 							fmt.Printf("\r\033[2KMoving files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")

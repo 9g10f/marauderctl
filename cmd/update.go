@@ -21,7 +21,7 @@ import (
 func Update() *cobra.Command {
 	var server string
 	var installPath string
-	var force bool // Ignores the device's remaining size for installation
+	var force bool // Ignores the device's remaining size for installation, and ignores script safety
 	var resumeline int
 	var outputStyle string // Default, JSON, Silent
 
