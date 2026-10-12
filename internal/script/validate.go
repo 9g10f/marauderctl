@@ -46,9 +46,14 @@ func ValidateScript(script []string) error {
 					}
 				} else {
 					if strings.Contains(line, "=") {
-						separator := GetSetSeparator(line[4:])
+						separator := GetSetSeparator(line)
 						if separator == -1 {
 							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)
+						}
+						
+						_, err := shellwords.Split(line[separator + 1:])
+						if err != nil {
+							return fmt.Errorf("Validate: Game install script is invalid: (%v), Variable defenition value cannot be split by shellwords: %v", linen + 1, err)
 						}
 					} else {
 						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)

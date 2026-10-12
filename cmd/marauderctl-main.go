@@ -2,7 +2,7 @@ package cmd
 
 // This file defines MarauderCtl, controls the version and organizes all commands
 
-var Version = "0.0.19"
+var Version = "0.0.19.1"
 
 func MarauderCtl() error {
 	Root.AddCommand(Install())

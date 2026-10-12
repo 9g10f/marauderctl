@@ -29,9 +29,10 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 					variableName = cmd[1]
 					variableValue = strings.Join(cmd[3:], " ")
 				} else {
-					separator := GetSetSeparator(line[4:])
+					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValue = line[separator + 1:]
+					variableValueSplit, _ := shellwords.Split(line[separator + 1:])
+					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
 				vars[variableName] = variableValue
@@ -72,9 +73,10 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 					variableName = cmd[1]
 					variableValue = strings.Join(cmd[3:], " ")
 				} else {
-					separator := GetSetSeparator(line[4:])
+					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValue = line[separator + 1:]
+					variableValueSplit, _ := shellwords.Split(line[separator + 1:])
+					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
 				vars[variableName] = variableValue
@@ -110,9 +112,10 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 					variableName = cmd[1]
 					variableValue = strings.Join(cmd[3:], " ")
 				} else {
-					separator := GetSetSeparator(line[4:])
+					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValue = line[separator + 1:]
+					variableValueSplit, _ := shellwords.Split(line[separator + 1:])
+					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
 				vars[variableName] = variableValue
