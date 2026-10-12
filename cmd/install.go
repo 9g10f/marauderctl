@@ -23,6 +23,7 @@ func Install() *cobra.Command {
 	var force bool // Ignores the device's remaining size for installation, and ignores script safety
 	var resumeline int
 	var outputStyle string // Default, JSON, Silent
+	var noSeeding bool
 
 	cmd := &cobra.Command{
 		Use: "install <game-id>@[game-version]",
@@ -46,6 +47,7 @@ func Install() *cobra.Command {
 				Force: force,
 				ResumeLine: resumeline,
 				OutputStyle: outputStyle,
+				NoSeeding: noSeeding,
 			}
 
 			fullScript, err := script.GetScript(gameMeta)
@@ -129,6 +131,7 @@ func Install() *cobra.Command {
 	cmd.Flags().BoolVarP(&force, "force", "f", false, "Ignore warnings and proceed with installation regardless")
 	cmd.Flags().IntVarP(&resumeline, "resume-line", "r", 0, "Resume installation from a specified install script line number")
 	cmd.Flags().StringVarP(&outputStyle, "output-style", "o", "default", "Output style")
+	cmd.Flags().BoolVar(&noSeeding, "no-seeding", false, "Disables BitTorrent seeding")
 
 	return cmd
 }

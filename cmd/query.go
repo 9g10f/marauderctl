@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -51,7 +52,12 @@ func Query() *cobra.Command {
 			default:
 				vars, err := script.ParseLocalScriptVariables(gameMeta)
 				if err != nil {
-					return err
+					gameScript, err2 := script.GetScript(gameMeta)
+					if err2 != nil {
+						return errors.Join(err, err2)
+					}
+
+					vars = script.ParseScriptVariables(gameScript, gameMeta)
 				}
 
 				fmt.Println(vars[args[1]])

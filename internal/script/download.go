@@ -20,7 +20,7 @@ import (
 )
 
 // Downloads the file from 'downloadURL' into the game's install directory
-func Download(downloadURL string, gameMeta cstructs.GameMeta) error {
+func Download(downloadURL string, installFlags cstructs.InstallFlags, gameMeta cstructs.GameMeta) error {
 	r, err := http.Get(downloadURL)
 	if err != nil {
 		return fmt.Errorf("Download: Unable to make request to download URL: '%v': %v", downloadURL, err)
@@ -49,7 +49,7 @@ func Download(downloadURL string, gameMeta cstructs.GameMeta) error {
 }
 
 // Downloads the file(s) from 'downloadURL' into the game's install directory through BitTorrent
-func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger logging.Logger, gameMeta cstructs.GameMeta) error {
+func DownloadTorrentMagnet(downloadURL string, logger logging.Logger, installFlags cstructs.InstallFlags, gameMeta cstructs.GameMeta) error {
 	cfg := torrent.NewDefaultClientConfig()
 	cfg.DataDir = gameMeta.GetDirectory()
 
@@ -79,6 +79,10 @@ func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger loggin
 		}
 
 		return fmt.Errorf("DownloadTorrentMagnet: Unable to add magnet: '%v'", downloadURL)
+	}
+
+	if installFlags.NoSeeding {
+		t.DisallowDataUpload()
 	}
 
 	<-t.GotInfo()
@@ -125,9 +129,9 @@ func DownloadTorrentMagnet(downloadURL string, outputStyle string, logger loggin
 		minutes := (eta % 3600) / 60
 		seconds := eta % 60
 
-		if outputStyle == "default" {
+		if installFlags.OutputStyle == "default" {
 			fmt.Printf("\r\033[2KDownloading game files ...   %.2f%% (%d / %d bytes) @ %.2f MiB/s ETA %d:%02d:%02d", percent, completed, total, float64(speed) / 1024 / 1024, hours, minutes, seconds)
-		} else if outputStyle == "json" {
+		} else if installFlags.OutputStyle == "json" {
 			fmt.Printf("\r\033[2K{\"task\": \"Downloading game files\", \"details\": \"Downloading %v\", \"progress\": %v, \"eta\": %v}", downloadURL, percent, eta)
 		}
 

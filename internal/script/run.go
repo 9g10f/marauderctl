@@ -134,12 +134,12 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 					}
 
 					if strings.HasPrefix(downloadURL, "magnet:") {
-						err := DownloadTorrentMagnet(downloadURL, installFlags.OutputStyle, torrentLogger, gameMeta)
+						err := DownloadTorrentMagnet(downloadURL, torrentLogger, installFlags, gameMeta)
 						if err != nil {
 							return err
 						}
 					} else {
-						err := Download(downloadURL, gameMeta)
+						err := Download(downloadURL, installFlags, gameMeta)
 						if err != nil {
 							return err
 						}

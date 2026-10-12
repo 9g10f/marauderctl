@@ -84,3 +84,55 @@ func GetVersionedScript(fullScript []string, gameMeta cstructs.GameMeta) ([]stri
 func GetProcessedFilePath(path string, gameMeta cstructs.GameMeta) string {
 	return strings.ReplaceAll(path, "$path", gameMeta.GetDirectory())
 }
+
+func CountTrailingBackslashes(s string) int {
+	if len(s) == 0 {
+		return -1
+	}
+
+	flippedS := ""
+	for _, char := range s {
+		flippedS = string(char) + flippedS
+	}
+
+	for idx, char := range flippedS {
+		if char == '\\' {
+			continue
+		}
+
+		return idx
+	}
+
+	return len(s)
+}
+
+// When the '=' character is joined to the variable name or value we can't use regular shellwords to split it
+// This function returns the index of the first '=' character out of a string
+func GetSetSeparator(line string) int {
+	inStr := false
+
+	for idx, char := range line {
+		if inStr {
+			if char == '"' {
+				trailingBackslashes := CountTrailingBackslashes(line[:idx])
+				if trailingBackslashes == -1 {
+					return -1
+				}
+				
+				if trailingBackslashes % 2 == 0 {
+					inStr = false
+				}
+			}
+		} else {
+			if char == '"' {
+				inStr = true
+			}
+
+			if char == '=' {
+				return idx
+			}
+		}
+	}
+
+	return -1
+}

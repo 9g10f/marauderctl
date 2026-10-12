@@ -40,9 +40,19 @@ func ValidateScript(script []string) error {
 
 			switch cmd[0] {
 			case "set":
-				// The 'set' command requires scripts to include whitespaces before and after the "=" character. If the script has the "=" character between the variable name and the variable value wihtout any whitespaces it will be parsed as being a single part (the name).
-				if !slices.Contains(cmd, "=") {
-					return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable defenition does not contain a name and a value (whitespaces are required before and after the '=' character)", linen + 1)
+				if slices.Contains(cmd, "=") {
+					if len(cmd) < 4 {
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a name and a value", linen + 1)
+					}
+				} else {
+					if strings.Contains(line, "=") {
+						separator := GetSetSeparator(line[4:])
+						if separator == -1 {
+							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)
+						}
+					} else {
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)
+					}
 				}
 			case "download":
 				for i, downloadURL := range cmd {

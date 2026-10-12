@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
@@ -21,10 +22,17 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
-				definition := strings.Split(strings.Join(cmd[1:], ""), "=")
+				var variableName string
+				var variableValue string
 
-				variableName := definition[0]
-				variableValue := strings.Join(definition[1:], "=")
+				if slices.Contains(cmd, "=") {
+					variableName = cmd[1]
+					variableValue = strings.Join(cmd[3:], " ")
+				} else {
+					separator := GetSetSeparator(line[4:])
+					variableName = line[4:separator]
+					variableValue = line[separator + 1:]
+				}
 
 				vars[variableName] = variableValue
 			}
@@ -57,10 +65,17 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
-				definition := strings.Split(strings.Join(cmd[1:], ""), "=")
+				var variableName string
+				var variableValue string
 
-				variableName := definition[0]
-				variableValue := strings.Join(definition[1:], "=")
+				if slices.Contains(cmd, "=") {
+					variableName = cmd[1]
+					variableValue = strings.Join(cmd[3:], " ")
+				} else {
+					separator := GetSetSeparator(line[4:])
+					variableName = line[4:separator]
+					variableValue = line[separator + 1:]
+				}
 
 				vars[variableName] = variableValue
 			}
@@ -88,10 +103,17 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
-				definition := strings.Split(strings.Join(cmd[1:], ""), "=")
+				var variableName string
+				var variableValue string
 
-				variableName := definition[0]
-				variableValue := strings.Join(definition[1:], "=")
+				if slices.Contains(cmd, "=") {
+					variableName = cmd[1]
+					variableValue = strings.Join(cmd[3:], " ")
+				} else {
+					separator := GetSetSeparator(line[4:])
+					variableName = line[4:separator]
+					variableValue = line[separator + 1:]
+				}
 
 				vars[variableName] = variableValue
 			}

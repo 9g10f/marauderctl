@@ -62,4 +62,5 @@ type InstallFlags struct {
 	Force 		bool
 	ResumeLine	int
 	OutputStyle	string
+	NoSeeding	bool
 }
