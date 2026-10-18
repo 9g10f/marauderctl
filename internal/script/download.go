@@ -101,9 +101,9 @@ func DownloadTorrentMagnet(downloadURL string, logger logging.Logger, installFla
 
 	t.DownloadAll()
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
-	var last int64 = t.BytesCompleted()
+	last := t.BytesCompleted()
 
 	speedsN := 0
 	var speedSum int64 = 0
@@ -120,7 +120,7 @@ func DownloadTorrentMagnet(downloadURL string, logger logging.Logger, installFla
 
 		avgSpeed := speedSum / int64(speedsN)
 
-		var eta int64 = 0
+		var eta int64
 		if avgSpeed > 0 {
 			eta = (total - completed) / avgSpeed
 		}
@@ -130,7 +130,7 @@ func DownloadTorrentMagnet(downloadURL string, logger logging.Logger, installFla
 		seconds := eta % 60
 
 		if installFlags.OutputStyle == "default" {
-			fmt.Printf("\r\033[2KDownloading game files ...   %.2f%% (%d / %d bytes) @ %.2f MiB/s ETA %d:%02d:%02d", percent, completed, total, float64(speed) / 1024 / 1024, hours, minutes, seconds)
+			fmt.Printf("\r\033[2KDownloading game files ... \t%.2f%% (%d / %d bytes) @ %.2f MiB/s ETA %d:%02d:%02d", percent, completed, total, float64(speed) / 1024 / 1024, hours, minutes, seconds)
 		} else if installFlags.OutputStyle == "json" {
 			fmt.Printf("\r\033[2K{\"task\": \"Downloading game files\", \"details\": \"Downloading %v\", \"progress\": %v, \"eta\": %v}", downloadURL, percent, eta)
 		}

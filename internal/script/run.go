@@ -3,7 +3,6 @@ package script
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -183,40 +182,18 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 						}
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KUnzipping game files ... \t0%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00")
+							fmt.Printf("\r\033[2KUnzipping game files ... \t0%% @ 0 %%/s ETA 0:00:00")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 0, \"eta\": 0}", source)
 						}
 
-						command := exec.Command(
-							"7z",
-							"x",
-							source,
-							"-ponline-fix.me",
-							"-y",
-						)
-
-						command.Dir = filepath.Dir(source)
-						command.Stdout = unzipLogger
-						command.Stderr = unzipLogger
-
-						err := command.Run()
+						err := Unzip(source, unzipLogger, installFlags)
 						if err != nil {
-							exitError, ok := err.(*exec.ExitError)
-							if !ok {
-								return fmt.Errorf("RunScript: unzip: Error while running 7z: %v", err)
-							}
-
-							code := exitError.ExitCode()
-
-							// We don't throw an error when the exit code is 2 because that's the exit code 7z throws when even tho it still unzipped the files there were some warnings (e.g. Unsupported Method)
-							if code != 2 {
-								return fmt.Errorf("RunScript: unzip: Error while running 7z: %v", err)
-							}
+							return err
 						}
 
 						if installFlags.OutputStyle == "default" {
-							fmt.Printf("\r\033[2KUnzipping game files ... \t100%% (0 / 0 bytes) @ 0 MiB/s ETA 0:00:00\n")
+							fmt.Printf("\r\033[2KUnzipping game files ... \t100%% @ 0 %%/s ETA 0:00:00\n")
 						} else if installFlags.OutputStyle == "json" {
 							fmt.Printf("\r\033[2K{\"task\": \"Unzipping game files\", \"details\": \"Unzipping %v\", \"progress\": 100, \"eta\": 0}\n", source)
 						}
