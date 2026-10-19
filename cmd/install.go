@@ -85,11 +85,6 @@ func Install() *cobra.Command {
 				return fmt.Errorf("Install: Unable to close ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
 			}
 
-			err = script.RunScript(gameScript, installFlags, gameMeta)
-			if err != nil {
-				return err
-			}
-
 			env, err := json.Marshal(scriptVars)
 			if err != nil {
 				return errors.New("Install: Unable to parse environment variables")
@@ -104,6 +99,11 @@ func Install() *cobra.Command {
 			_, err = envFile.Write(env)
 			if err != nil {
 				return fmt.Errorf("Install: Unable to write to environment file: '%v'", gameMeta.GetEnvFile())
+			}
+
+			err = script.RunScript(gameScript, installFlags, gameMeta)
+			if err != nil {
+				return err
 			}
 
 			if gameMeta.GetVersion() == "latest" {
