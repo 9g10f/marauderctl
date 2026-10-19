@@ -79,13 +79,8 @@ func (g GameMeta) SetDone() error {
 	return nil
 }
 
-func (g GameMeta) SetNotDone() error {
-	err := os.Remove(g.GetDoneFile())
-	if err != nil {
-		return fmt.Errorf("GameMeta: SetNotDone: Unable to remove done file: %v", err)
-	}
-	
-	return nil
+func (g GameMeta) SetNotDone() {
+	os.Remove(g.GetDoneFile())
 }
 
 func (g GameMeta) IsDone() (bool, error) {

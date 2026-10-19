@@ -122,10 +122,7 @@ func Update() *cobra.Command {
 				return fmt.Errorf("Update: Unable to close ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
 			}
 
-			err = gameMeta.SetNotDone()
-			if err != nil {
-				return err
-			}
+			gameMeta.SetNotDone()
 
 			env, err := json.Marshal(scriptVars)
 			if err != nil {

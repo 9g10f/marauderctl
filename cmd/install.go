@@ -94,10 +94,7 @@ func Install() *cobra.Command {
 				return errors.New("Install: Game is already installed")
 			}
 
-			err = gameMeta.SetNotDone()
-			if err != nil {
-				return err
-			}
+			gameMeta.SetNotDone()
 
 			env, err := json.Marshal(scriptVars)
 			if err != nil {
