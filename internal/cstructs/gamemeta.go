@@ -2,6 +2,9 @@ package cstructs
 
 import (
 	"encoding/base64"
+	"errors"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -60,6 +63,39 @@ func (g GameMeta) GetRuntimeLogsDirectory() string {
 
 func (g GameMeta) GetDoneFile() string {
 	return filepath.Join(g.GetDirectory(), ".marauder.idone")
+}
+
+func (g GameMeta) SetDone() error {
+	file, err := os.Create(g.GetDoneFile())
+	if err != nil {
+		return fmt.Errorf("GameMeta: SetDone: Unable to create done file: %v", err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		return fmt.Errorf("GameMeta: SetDone: Unable to close done file: %v", err)
+	}
+
+	return nil
+}
+
+func (g GameMeta) SetNotDone() error {
+	err := os.Remove(g.GetDoneFile())
+	if err != nil {
+		return fmt.Errorf("GameMeta: SetNotDone: Unable to remove done file: %v", err)
+	}
+	
+	return nil
+}
+
+func (g GameMeta) IsDone() (bool, error) {
+	if _, err := os.Stat(g.GetDoneFile()); err == nil {
+		return true, nil
+	} else if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	} else {
+		return false, fmt.Errorf("GameMeta: IsDone: Unable to inspect file: '%v'", g.GetDoneFile())
+	}
 }
 
 type InstallFlags struct {

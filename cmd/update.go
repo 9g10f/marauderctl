@@ -122,6 +122,11 @@ func Update() *cobra.Command {
 				return fmt.Errorf("Update: Unable to close ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
 			}
 
+			err = gameMeta.SetNotDone()
+			if err != nil {
+				return err
+			}
+
 			env, err := json.Marshal(scriptVars)
 			if err != nil {
 				return errors.New("Update: Unable to parse environment variables")
@@ -139,6 +144,11 @@ func Update() *cobra.Command {
 			}
 
 			err = script.RunScript(gameScript, installFlags, gameMeta)
+			if err != nil {
+				return err
+			}
+
+			err = gameMeta.SetDone()
 			if err != nil {
 				return err
 			}
