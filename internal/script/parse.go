@@ -18,7 +18,7 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 
 	for _, line := range fullScript {
 		// We can ignore this error because it is always checked by ValidateScript beforehand
-		cmd, _ := shellwords.Split(line)
+		cmd, _ := shellwords.SplitPosix(line)
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
@@ -31,7 +31,7 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 				} else {
 					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValueSplit, _ := shellwords.Split(line[separator + 1:])
+					variableValueSplit, _ := shellwords.SplitPosix(line[separator + 1:])
 					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
@@ -62,7 +62,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 	stop := false
 	for linen, line := range fullScript {
 		// We can ignore this error because it is always checked by ValidateScript beforehand
-		cmd, _ := shellwords.Split(line)
+		cmd, _ := shellwords.SplitPosix(line)
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
@@ -75,7 +75,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 				} else {
 					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValueSplit, _ := shellwords.Split(line[separator + 1:])
+					variableValueSplit, _ := shellwords.SplitPosix(line[separator + 1:])
 					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
@@ -101,7 +101,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 	// Process versioned variables with a higher priority
 	for _, line := range script {
 		// We can ignore this error because it is always checked by ValidateScript beforehand
-		cmd, _ := shellwords.Split(line)
+		cmd, _ := shellwords.SplitPosix(line)
 
 		if len(cmd) > 0 {
 			if cmd[0] == "set" {
@@ -114,7 +114,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 				} else {
 					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValueSplit, _ := shellwords.Split(line[separator + 1:])
+					variableValueSplit, _ := shellwords.SplitPosix(line[separator + 1:])
 					variableValue = strings.Join(variableValueSplit, " ")
 				}
 

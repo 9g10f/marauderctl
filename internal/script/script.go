@@ -22,7 +22,7 @@ func ReformatScript(script []string) []string {
 // Returns if a line defines the start of a versioned script (@<game-version>)
 func IsVersionDelimiter(line string) bool {
 	// We can ignore this error because it is always checked by ValidateScript beforehand
-	cmd, _ := shellwords.Split(line)
+	cmd, _ := shellwords.SplitPosix(line)
 
 	if len(cmd) > 0 {
 		if strings.HasPrefix(cmd[0], "@") {

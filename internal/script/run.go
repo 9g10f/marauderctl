@@ -89,7 +89,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 			continue
 		}
 
-		command, err := shellwords.Split(line)
+		command, err := shellwords.SplitPosix(line)
 		if err != nil {
 			return fmt.Errorf("RunScript: Unable to split command: '%v'", command)
 		}
