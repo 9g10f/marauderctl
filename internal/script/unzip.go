@@ -115,17 +115,7 @@ func Unzip(source string, unzipLogger logging.Logger, installFlags cstructs.Inst
 
 	err = command.Wait()
 	if err != nil {
-		exitError, ok := err.(*exec.ExitError)
-		if !ok {
-			return fmt.Errorf("Unzip: Error while running 7z: %v", err)
-		}
-
-		code := exitError.ExitCode()
-
-		// We don't throw an error when the exit code is 2 because that's the exit code 7z throws when even tho it still unzipped the files there were some warnings (e.g. Unsupported Method)
-		if code != 2 {
-			return fmt.Errorf("Unzip: Error while running 7z: %v", err)
-		}
+		return fmt.Errorf("Unzip: Error while running 7z: %v", err)
 	}
 
 	return nil
