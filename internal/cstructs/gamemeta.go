@@ -58,6 +58,10 @@ func (g GameMeta) GetRuntimeLogsDirectory() string {
 	return filepath.Join(g.GetDirectory(), ".marauder.logs", "runtime")
 }
 
+func (g GameMeta) GetDoneFile() string {
+	return filepath.Join(g.GetDirectory(), ".marauder.idone")
+}
+
 type InstallFlags struct {
 	Force 		bool
 	ResumeLine	int

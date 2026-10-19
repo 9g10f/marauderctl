@@ -85,6 +85,12 @@ func Install() *cobra.Command {
 				return fmt.Errorf("Install: Unable to close ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
 			}
 
+			if _, err := os.Stat(gameMeta.GetDoneFile()); err == nil {
+				return errors.New("Install: Game is already installed")
+			} else if !errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf("Install: Unable to inspect file: '%v'", gameMeta.GetDoneFile())
+			}
+
 			env, err := json.Marshal(scriptVars)
 			if err != nil {
 				return errors.New("Install: Unable to parse environment variables")
@@ -104,6 +110,16 @@ func Install() *cobra.Command {
 			err = script.RunScript(gameScript, installFlags, gameMeta)
 			if err != nil {
 				return err
+			}
+
+			donefile, err := os.Create(gameMeta.GetDoneFile())
+			if err != nil {
+				return fmt.Errorf("Install: Unable to done file: '%v'", gameMeta.GetDoneFile())
+			}
+			
+			err = donefile.Close()
+			if err != nil {
+				return fmt.Errorf("Install: Unable to close done file: '%v'", gameMeta.GetDoneFile())
 			}
 
 			if gameMeta.GetVersion() == "latest" {
