@@ -6,14 +6,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"codeberg.org/9g10f/marauderctl/internal/cstructs"
 )
 
 // Returns the search results as a lits of game-ids
-func Search(text string, server string) ([]string, error) {
+func Search(text string, server string, limit int) ([]string, error) {
 	searchURL := "search?txt=" + text
+	if limit != 0 {
+		searchURL += "&limit=" + strconv.Itoa(limit)
+	}
 
 	r, err := http.Get(server + searchURL)
 	if err != nil {

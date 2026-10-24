@@ -16,6 +16,7 @@ import (
 func Search() *cobra.Command {
 	var server string
 	var outputStyle string // Default, JSON, Silent
+	var limit int
 
 	cmd := &cobra.Command{
 		Use: "search <text>",
@@ -29,7 +30,7 @@ func Search() *cobra.Command {
 				return fmt.Errorf("Search: Invalid output type: '%v'", outputStyle)
 			}
 			
-			results, err := script.Search(args[0], server)
+			results, err := script.Search(args[0], server, limit)
 			if err != nil {
 				return err
 			}
@@ -73,6 +74,7 @@ func Search() *cobra.Command {
 
 	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
 	cmd.Flags().StringVarP(&outputStyle, "output-style", "o", "default", "Output style")
+	cmd.Flags().IntVarP(&limit, "limit", "l", 0, "Limit of results")
 
 	return cmd
 }
