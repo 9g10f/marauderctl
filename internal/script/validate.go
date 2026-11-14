@@ -44,6 +44,12 @@ func ValidateScript(script []string) error {
 					if len(cmd) < 4 {
 						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a name and a value", linen + 1)
 					}
+
+					variableName := cmd[1]
+
+					if variableName == "script" || variableName == "latest-version" || variableName == "versions" {
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable name cannot be a special query", linen + 1)
+					}
 				} else {
 					if strings.Contains(line, "=") {
 						separator := GetSetSeparator(line)
@@ -54,6 +60,11 @@ func ValidateScript(script []string) error {
 						_, err := shellwords.SplitPosix(line[separator + 1:])
 						if err != nil {
 							return fmt.Errorf("Validate: Game install script is invalid: (%v), Variable defenition value cannot be split by shellwords: %v", linen + 1, err)
+						}
+
+						variableName := line[4:separator]
+						if variableName == "script" || variableName == "latest-version" || variableName == "versions" {
+							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable name cannot be a special query", linen + 1)
 						}
 					} else {
 						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)
