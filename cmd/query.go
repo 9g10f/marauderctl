@@ -11,13 +11,12 @@ import (
 )
 
 // The query command lets you fetch information or environment variables about a specified game
-
 func Query() *cobra.Command {
 	var server string
 	var installPath string
 
 	cmd := &cobra.Command{
-		Use: "query <game-id>@[game-version] <query-param:script|latest-version|*>",
+		Use: "query <game-id>@[game-version] <query-param:script|latest-version|versions|*>",
 		Short: "Get information about a game",
 		Args: cobra.ExactArgs(2),
 		SilenceUsage: true,
@@ -49,6 +48,13 @@ func Query() *cobra.Command {
 				}
 
 				fmt.Println(script.ParseGameLatestVersion(gameScript))
+			case "versions":
+				gameScript, err := script.GetScript(gameMeta)
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(script.ParseGameVersions(gameScript))
 			default:
 				vars, err := script.ParseLocalScriptVariables(gameMeta)
 				if err != nil {
