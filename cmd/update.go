@@ -56,6 +56,15 @@ func Update() *cobra.Command {
 				return errors.New("Update: You can only update the latest version of a game")
 			}
 
+			// Check if provided path is a Marauder library
+			if _, err := os.Stat(filepath.Join(installPath, ".marauder.ipath")); err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					return fmt.Errorf("Update: Provided path is not a Marauder library")
+				} else {
+					return fmt.Errorf("Update: Unable to analyse ipath file: %v", err)
+				}
+			}
+
 			fullScript, err := script.GetScript(gameMeta)
 			if err != nil {
 				return err
@@ -110,17 +119,7 @@ func Update() *cobra.Command {
 			err = os.MkdirAll(gameMeta.GetDirectory(), 0755)
 			if err != nil {
 				return fmt.Errorf("Update: Unable to create game install directory: '%v'", gameMeta.GetDirectory())
-			}
-
-			ipathFile, err := os.Create(filepath.Join(installPath, ".marauder.ipath"))
-			if err != nil {
-				return fmt.Errorf("Update: Unable to create ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
-			}
-			
-			err = ipathFile.Close()
-			if err != nil {
-				return fmt.Errorf("Update: Unable to close ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
-			}
+			}	
 
 			gameMeta.SetNotDone()
 

@@ -31,6 +31,10 @@ go install codeberg.org/9g10f/marauderctl@latest
 ```
 
 ## Usage
+Before doing anything, you first need to create your Marauder library (you can of course control it's path by passing `-p`):
+```
+marauderctl library create
+```
 You can use `marauderctl` to install games through it's `game-id` and it's `game-version` on your server. You can search for the `game-id` from it's name or anything that's related to it using:
 ```
 marauderctl search <search-term>
@@ -62,6 +66,7 @@ marauderctl uninstall <game-id>@[game-version/latest]
 
 What this looks like in practice:
 > ```
+> $ marauderctl library create
 > $ marauderctl search "Backrooms"
 > $ marauderctl query 0 script
 > $ marauderctl install 0
@@ -72,6 +77,7 @@ What this looks like in practice:
 > ```
 Which is the same as 
 > ```
+> $ marauderctl library create
 > $ marauderctl search "Backrooms"
 > $ marauderctl query 0@latest script
 > $ marauderctl install 0@latest
@@ -82,6 +88,7 @@ Which is the same as
 > ```
 Or specify a game version
 > ```
+> $ marauderctl library create
 > $ marauderctl search "Backrooms"
 > $ marauderctl query 0@06012026 script
 > $ marauderctl install 0@06012026
@@ -101,6 +108,7 @@ Usage:
 Available Commands:
   help        Help about any command
   install     Install a game
+  library     Modifies a Marauder library (install path)
   list        List all installed games
   query       Get information about a game
   search      Search for a game

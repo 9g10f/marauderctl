@@ -74,15 +74,13 @@ func Install() *cobra.Command {
 				return fmt.Errorf("Install: Unable to create game install directory: '%v'", gameMeta.GetDirectory())
 			}
 
-			// The ipath file is used to find/verify Marauder install paths
-			ipathFile, err := os.Create(filepath.Join(installPath, ".marauder.ipath"))
-			if err != nil {
-				return fmt.Errorf("Install: Unable to create ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
-			}
-
-			err = ipathFile.Close()
-			if err != nil {
-				return fmt.Errorf("Install: Unable to close ipath file: '%v'", filepath.Join(installPath, ".marauder.ipath"))
+			// Check if provided path is a Marauder library
+			if _, err := os.Stat(filepath.Join(installPath, ".marauder.ipath")); err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					return fmt.Errorf("Update: Provided path is not a Marauder library")
+				} else {
+					return fmt.Errorf("Update: Unable to analyse ipath file: %v", err)
+				}
 			}
 
 			isDone, err := gameMeta.IsDone()
