@@ -19,17 +19,17 @@ func Search() *cobra.Command {
 	var limit int
 
 	cmd := &cobra.Command{
-		Use: "search <text>",
-		Short: "Search for a game",
-		SilenceUsage: true,
+		Use:           "search <text>",
+		Short:         "Search for a game",
+		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: cobra.ExactArgs(1),
+		Args:          cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Check if 'output-style' is valid
 			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
 				return fmt.Errorf("Search: Invalid output type: '%v'", outputStyle)
 			}
-			
+
 			results, err := script.Search(args[0], server, limit)
 			if err != nil {
 				return err

@@ -31,7 +31,7 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 				} else {
 					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValueSplit, _ := shellwords.SplitPosix(line[separator + 1:])
+					variableValueSplit, _ := shellwords.SplitPosix(line[separator+1:])
 					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
@@ -43,7 +43,7 @@ func ParseGlobalScriptVariables(fullScript []string) map[string]string {
 			break
 		}
 	}
-	
+
 	return vars
 }
 
@@ -75,7 +75,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 				} else {
 					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValueSplit, _ := shellwords.SplitPosix(line[separator + 1:])
+					variableValueSplit, _ := shellwords.SplitPosix(line[separator+1:])
 					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
@@ -85,7 +85,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 
 		if IsVersionDelimiter(line) && line[1:] == gameVersion {
 			if !stop {
-				for _, subLine := range fullScript[linen + 1:] {
+				for _, subLine := range fullScript[linen+1:] {
 					if IsVersionDelimiter(subLine) {
 						break
 					}
@@ -114,7 +114,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 				} else {
 					separator := GetSetSeparator(line)
 					variableName = line[4:separator]
-					variableValueSplit, _ := shellwords.SplitPosix(line[separator + 1:])
+					variableValueSplit, _ := shellwords.SplitPosix(line[separator+1:])
 					variableValue = strings.Join(variableValueSplit, " ")
 				}
 
@@ -122,7 +122,7 @@ func ParseScriptVariables(fullScript []string, gameMeta cstructs.GameMeta) map[s
 			}
 		}
 	}
-	
+
 	return vars
 }
 

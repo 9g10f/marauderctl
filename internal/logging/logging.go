@@ -14,7 +14,7 @@ import (
 // This file handles both the install and runtime logging
 
 type Logger struct {
-	File 	*os.File
+	File     *os.File
 	Location string
 }
 
@@ -52,7 +52,7 @@ func GetInstallLogFile(st time.Time, gameMeta cstructs.GameMeta) (*os.File, erro
 	// If log file already exists (shouldn't naturally happen) the contents of the next writes are appended
 	// If the log file doesn't exist (the most common) it is created
 	if _, err := os.Stat(filePath); err == nil {
-		file, err = os.OpenFile(filePath, os.O_APPEND | os.O_WRONLY, 0644)
+		file, err = os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			return nil, fmt.Errorf("GetInstallLogFile: Unable to open file: '%v'", filePath)
 		}
@@ -64,7 +64,7 @@ func GetInstallLogFile(st time.Time, gameMeta cstructs.GameMeta) (*os.File, erro
 	} else {
 		return nil, fmt.Errorf("GetInstallLogFile: Unable to inspect file: '%v'", filePath)
 	}
-	
+
 	return file, nil
 }
 
@@ -81,7 +81,7 @@ func GetRuntimeLogFile(st time.Time, gameMeta cstructs.GameMeta) (*os.File, erro
 	// If log file already exists (shouldn't naturally happen) the contents of the next writes are appended
 	// If the log file doesn't exist (the most common) it is created
 	if _, err := os.Stat(filePath); err == nil {
-		file, err = os.OpenFile(filePath, os.O_APPEND | os.O_WRONLY, 0644)
+		file, err = os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			return nil, fmt.Errorf("GetRuntimeLogFile: Unable to open file: '%v'", filePath)
 		}
@@ -93,6 +93,6 @@ func GetRuntimeLogFile(st time.Time, gameMeta cstructs.GameMeta) (*os.File, erro
 	} else {
 		return nil, fmt.Errorf("GetRuntimeLogFile: Unable to inspect file: '%v'", filePath)
 	}
-	
+
 	return file, nil
 }

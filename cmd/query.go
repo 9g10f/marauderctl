@@ -16,18 +16,18 @@ func Query() *cobra.Command {
 	var installPath string
 
 	cmd := &cobra.Command{
-		Use: "query <game-id>@[game-version] <query-param:script|latest-version|versions|*>",
-		Short: "Get information about a game",
-		Args: cobra.ExactArgs(2),
-		SilenceUsage: true,
+		Use:           "query <game-id>@[game-version] <query-param:script|latest-version|versions|*>",
+		Short:         "Get information about a game",
+		Args:          cobra.ExactArgs(2),
+		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameMeta := cstructs.GameMeta{
-				Game: args[0],
+				Game:        args[0],
 				InstallPath: installPath,
-				Server: server,
+				Server:      server,
 			}
-			
+
 			switch args[1] {
 			case "script":
 				fullScript, err := script.GetScript(gameMeta)

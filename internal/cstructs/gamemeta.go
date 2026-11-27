@@ -12,9 +12,9 @@ import (
 // The GameMeta struct is used as an arugment to most script-related functions, it holds the game-id, game-version, install path and server
 // It also provides quality-of-life functions such as GetId, GetVersion, GetServerBase64 (used for the folder names), GetDirectory (game's install path), GetEnvFile, GetVersionFile, GetProgressFile, GetInstallLogsDirectory and GetRuntimeLogsDirectory
 type GameMeta struct {
-	Game 		string
+	Game        string
 	InstallPath string
-	Server		string
+	Server      string
 }
 
 func (g GameMeta) GetId() string {
@@ -94,8 +94,8 @@ func (g GameMeta) IsDone() (bool, error) {
 }
 
 type InstallFlags struct {
-	Force 		bool
-	ResumeLine	int
-	OutputStyle	string
-	NoSeeding	bool
+	Force       bool
+	ResumeLine  int
+	OutputStyle string
+	NoSeeding   bool
 }

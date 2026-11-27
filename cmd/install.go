@@ -26,11 +26,11 @@ func Install() *cobra.Command {
 	var noSeeding bool
 
 	cmd := &cobra.Command{
-		Use: "install <game-id>@[game-version]",
-		Short: "Install a game",
-		SilenceUsage: true,
+		Use:           "install <game-id>@[game-version]",
+		Short:         "Install a game",
+		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: cobra.ExactArgs(1),
+		Args:          cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Check if 'output-style' is valid
 			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
@@ -38,16 +38,16 @@ func Install() *cobra.Command {
 			}
 
 			gameMeta := cstructs.GameMeta{
-				Game: args[0],
+				Game:        args[0],
 				InstallPath: installPath,
-				Server: server,
+				Server:      server,
 			}
 
 			installFlags := cstructs.InstallFlags{
-				Force: force,
-				ResumeLine: resumeline,
+				Force:       force,
+				ResumeLine:  resumeline,
 				OutputStyle: outputStyle,
-				NoSeeding: noSeeding,
+				NoSeeding:   noSeeding,
 			}
 
 			fullScript, err := script.GetScript(gameMeta)
@@ -87,7 +87,7 @@ func Install() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			
+
 			if isDone {
 				return errors.New("Install: Game is already installed")
 			}

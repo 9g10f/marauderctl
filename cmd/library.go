@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"errors"
-	"path/filepath"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -15,11 +15,11 @@ func Library() *cobra.Command {
 	var installPath string
 
 	cmd := &cobra.Command{
-		Use: "library <command>",
-		Short: "Modifies a Marauder library (install path)",
-		SilenceUsage: true,
+		Use:           "library <command>",
+		Short:         "Modifies a Marauder library (install path)",
+		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: cobra.ExactArgs(1),
+		Args:          cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch args[0] {
 			case "create":
@@ -75,7 +75,7 @@ func Library() *cobra.Command {
 			case "clean":
 				// Remove all game files but leave the library
 			}
-			
+
 			return nil
 		},
 	}

@@ -60,7 +60,7 @@ func GetVersionedScript(fullScript []string, gameMeta cstructs.GameMeta) ([]stri
 	found := false
 	for linen, line := range fullScript {
 		if IsVersionDelimiter(line) && line[1:] == gameVersion {
-			for _, subLine := range fullScript[linen + 1:] {
+			for _, subLine := range fullScript[linen+1:] {
 				if IsVersionDelimiter(subLine) {
 					break
 				}
@@ -118,8 +118,8 @@ func GetSetSeparator(line string) int {
 				if trailingBackslashes == -1 {
 					return -1
 				}
-				
-				if trailingBackslashes % 2 == 0 {
+
+				if trailingBackslashes%2 == 0 {
 					inStr = false
 				}
 			}

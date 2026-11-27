@@ -240,11 +240,11 @@ func ProtonRun(gameExe string, proton string, gameMeta cstructs.GameMeta) (*exec
 	env := os.Environ()
 
 	if !IsEnvSet(env, "STEAM_COMPAT_DATA_PATH") {
-		env = append(env, "STEAM_COMPAT_DATA_PATH=" + filepath.Join(homeDir, ".local", "share", "marauder", "compat", gameId))
+		env = append(env, "STEAM_COMPAT_DATA_PATH="+filepath.Join(homeDir, ".local", "share", "marauder", "compat", gameId))
 	}
 
 	if !IsEnvSet(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH") {
-		env = append(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH=" + filepath.Join(homeDir, ".local", "share", "Steam"))
+		env = append(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH="+filepath.Join(homeDir, ".local", "share", "Steam"))
 	}
 
 	if !IsEnvSet(env, "PROTON_LOG") {
@@ -252,13 +252,13 @@ func ProtonRun(gameExe string, proton string, gameMeta cstructs.GameMeta) (*exec
 	}
 
 	if !IsEnvSet(env, "PROTON_LOG_DIR") {
-		env = append(env, "PROTON_LOG_DIR=" + filepath.Join(homeDir, ".local", "share", "marauder", "logs"))
+		env = append(env, "PROTON_LOG_DIR="+filepath.Join(homeDir, ".local", "share", "marauder", "logs"))
 	}
 
 	if !IsEnvSet(env, "STEAM_COMPAT_APP_ID") {
 		steamAppId, ok := vars["steam-app-id"]
 		if ok {
-			env = append(env, "STEAM_COMPAT_APP_ID=" + steamAppId)
+			env = append(env, "STEAM_COMPAT_APP_ID="+steamAppId)
 		}
 	}
 
@@ -271,7 +271,7 @@ func ProtonRun(gameExe string, proton string, gameMeta cstructs.GameMeta) (*exec
 
 func IsEnvSet(env []string, key string) bool {
 	for _, envVar := range env {
-		if strings.HasPrefix(envVar, key + "=") {
+		if strings.HasPrefix(envVar, key+"=") {
 			return true
 		}
 	}

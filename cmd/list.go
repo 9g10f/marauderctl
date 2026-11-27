@@ -15,9 +15,9 @@ func List() *cobra.Command {
 	var installPath string
 
 	cmd := &cobra.Command{
-		Use: "list",
-		Short: "List all installed games",
-		SilenceUsage: true,
+		Use:           "list",
+		Short:         "List all installed games",
+		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var l []string
@@ -62,7 +62,7 @@ func List() *cobra.Command {
 								continue
 							}
 
-							l = append(l, game.Name() + "@" + version.Name())
+							l = append(l, game.Name()+"@"+version.Name())
 						}
 					}
 				}

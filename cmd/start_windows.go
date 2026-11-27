@@ -25,16 +25,16 @@ func Start() *cobra.Command {
 	var installPath string
 
 	cmd := &cobra.Command{
-		Use: "start <game-id>@[game-version]",
-		Short: "Start a game",
-		SilenceUsage: true,
+		Use:           "start <game-id>@[game-version]",
+		Short:         "Start a game",
+		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: cobra.ExactArgs(1),
+		Args:          cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameMeta := cstructs.GameMeta{
-				Game: args[0],
+				Game:        args[0],
 				InstallPath: installPath,
-				Server: server,
+				Server:      server,
 			}
 
 			st := time.Now()
@@ -47,10 +47,10 @@ func Start() *cobra.Command {
 			defer logfile.Close()
 
 			logger := logging.Logger{
-				File: logfile,
+				File:     logfile,
 				Location: "game",
 			}
-			
+
 			vars, err := script.ParseLocalScriptVariables(gameMeta)
 			if err != nil {
 				return err
@@ -101,7 +101,7 @@ func Start() *cobra.Command {
 			return nil
 		},
 	}
-	
+
 	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
 	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path with game installation")
 

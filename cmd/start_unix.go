@@ -29,11 +29,11 @@ func Start() *cobra.Command {
 	var protonPath string
 
 	cmd := &cobra.Command{
-		Use: "start <game-id>@[game-version]",
-		Short: "Start a game",
-		SilenceUsage: true,
+		Use:           "start <game-id>@[game-version]",
+		Short:         "Start a game",
+		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: cobra.ExactArgs(1),
+		Args:          cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Check if 'compatibility-layer' is valid
 			if compatibilityLayer != "none" && compatibilityLayer != "wine" && compatibilityLayer != "proton" {
@@ -41,9 +41,9 @@ func Start() *cobra.Command {
 			}
 
 			gameMeta := cstructs.GameMeta{
-				Game: args[0],
+				Game:        args[0],
 				InstallPath: installPath,
-				Server: server,
+				Server:      server,
 			}
 
 			st := time.Now()
@@ -56,7 +56,7 @@ func Start() *cobra.Command {
 			defer logfile.Close()
 
 			logger := logging.Logger{
-				File: logfile,
+				File:     logfile,
 				Location: "game",
 			}
 
@@ -132,7 +132,7 @@ func Start() *cobra.Command {
 			return nil
 		},
 	}
-	
+
 	cmd.Flags().StringVarP(&server, "server", "s", DEFAULTSERVER(), "Server with install scripts")
 	cmd.Flags().StringVarP(&installPath, "install-path", "p", DEFAULTINSTALLPATH(), "Folder path with game installation")
 	cmd.Flags().StringVarP(&compatibilityLayer, "compatibility", "c", "proton", "Compatibility layer")

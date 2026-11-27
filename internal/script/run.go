@@ -33,7 +33,7 @@ func IsInInstallDirectory(path string, installDirectory string) (bool, error) {
 		return true, nil
 	}
 
-	if rel == ".." || strings.HasPrefix(rel, ".." + string(filepath.Separator)) {
+	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		return false, nil
 	}
 
@@ -56,12 +56,12 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 	defer logfile.Close()
 
 	torrentLogger := logging.Logger{
-		File: logfile,
+		File:     logfile,
 		Location: "torrent",
 	}
 
 	unzipLogger := logging.Logger{
-		File: logfile,
+		File:     logfile,
 		Location: "7z",
 	}
 
@@ -78,14 +78,14 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 	} else {
 		installFlags.ResumeLine = progress + 1
 	}
-	
+
 	err = WriteProgress(progress, gameMeta)
 	if err != nil {
 		return err
 	}
 
 	for linen, line := range script {
-		if linen + 1 < installFlags.ResumeLine {
+		if linen+1 < installFlags.ResumeLine {
 			continue
 		}
 
@@ -93,7 +93,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 		if err != nil {
 			return fmt.Errorf("RunScript: Unable to split command: '%v'", command)
 		}
-		
+
 		if len(command) > 0 { // Skip blank lines
 			// Allow comments
 			if command[0][0] == '#' {
@@ -484,7 +484,7 @@ func RunScript(script []string, installFlags cstructs.InstallFlags, gameMeta cst
 		}
 
 		progress++
-		
+
 		err = WriteProgress(progress, gameMeta)
 		if err != nil {
 			return err

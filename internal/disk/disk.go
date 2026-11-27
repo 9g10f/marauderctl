@@ -58,7 +58,7 @@ func root(p string) string {
 		if parent == p {
 			return p
 		}
-		
+
 		p = parent
 	}
 }

@@ -27,11 +27,11 @@ func Update() *cobra.Command {
 	var noSeeding bool
 
 	cmd := &cobra.Command{
-		Use: "update <game-id>",
-		Short: "Update an installed game to the latest version",
-		SilenceUsage: true,
+		Use:           "update <game-id>",
+		Short:         "Update an installed game to the latest version",
+		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: cobra.ExactArgs(1),
+		Args:          cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Check if 'output-style' is valid
 			if strings.ToLower(outputStyle) != "default" && strings.ToLower(outputStyle) != "json" && strings.ToLower(outputStyle) != "silent" {
@@ -39,16 +39,16 @@ func Update() *cobra.Command {
 			}
 
 			gameMeta := cstructs.GameMeta{
-				Game: args[0],
+				Game:        args[0],
 				InstallPath: installPath,
-				Server: server,
+				Server:      server,
 			}
 
 			installFlags := cstructs.InstallFlags{
-				Force: force,
-				ResumeLine: resumeline,
+				Force:       force,
+				ResumeLine:  resumeline,
 				OutputStyle: outputStyle,
-				NoSeeding: noSeeding,
+				NoSeeding:   noSeeding,
 			}
 
 			// If the game wasn't installed with @latest it can't be updated
@@ -119,7 +119,7 @@ func Update() *cobra.Command {
 			err = os.MkdirAll(gameMeta.GetDirectory(), 0755)
 			if err != nil {
 				return fmt.Errorf("Update: Unable to create game install directory: '%v'", gameMeta.GetDirectory())
-			}	
+			}
 
 			gameMeta.SetNotDone()
 

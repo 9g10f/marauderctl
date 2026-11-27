@@ -23,6 +23,6 @@ func GetAvailableSpace(path string) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("GetAvailableSpace: Unable to inspect device: '%v'", path)
 	}
-	
+
 	return int(freeBytes), nil
 }

@@ -20,21 +20,20 @@ func ValidateScript(script []string) error {
 	for linen, line := range script {
 		cmd, err := shellwords.SplitPosix(line)
 		if err != nil {
-			return fmt.Errorf("Validate: Game install script is invalid: (%v) Line can't be parsed | error=%v", linen + 1, err)
+			return fmt.Errorf("Validate: Game install script is invalid: (%v) Line can't be parsed | error=%v", linen+1, err)
 		}
 
 		if len(cmd) > 0 {
 			if cmd[0][0] == '@' {
 				if cmd[0] == "@" {
 					// Version can't be blank
-					return fmt.Errorf("Validate: Game install script is invalid: (%v) Version delimiter has no name", linen + 1)
+					return fmt.Errorf("Validate: Game install script is invalid: (%v) Version delimiter has no name", linen+1)
 				}
 
 				continue
 			}
 
 			if cmd[0][0] == '#' {
-				// Allow comments
 				continue
 			}
 
@@ -42,32 +41,32 @@ func ValidateScript(script []string) error {
 			case "set":
 				if slices.Contains(cmd, "=") {
 					if len(cmd) < 4 {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a name and a value", linen + 1)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a name and a value", linen+1)
 					}
 
 					variableName := cmd[1]
 
 					if variableName == "script" || variableName == "latest-version" || variableName == "versions" {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable name cannot be a special query", linen + 1)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable name cannot be a special query", linen+1)
 					}
 				} else {
 					if strings.Contains(line, "=") {
 						separator := GetSetSeparator(line)
 						if separator == -1 {
-							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)
+							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen+1)
 						}
-						
-						_, err := shellwords.SplitPosix(line[separator + 1:])
+
+						_, err := shellwords.SplitPosix(line[separator+1:])
 						if err != nil {
-							return fmt.Errorf("Validate: Game install script is invalid: (%v), Variable defenition value cannot be split by shellwords: %v", linen + 1, err)
+							return fmt.Errorf("Validate: Game install script is invalid: (%v), Variable defenition value cannot be split by shellwords: %v", linen+1, err)
 						}
 
 						variableName := line[4:separator]
 						if variableName == "script" || variableName == "latest-version" || variableName == "versions" {
-							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable name cannot be a special query", linen + 1)
+							return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable name cannot be a special query", linen+1)
 						}
 					} else {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen + 1)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Variable definition does not contain a '='", linen+1)
 					}
 				}
 			case "download":
@@ -75,10 +74,10 @@ func ValidateScript(script []string) error {
 					if i == 0 {
 						continue
 					}
-					
+
 					_, err := url.Parse(downloadURL)
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid download URL: '%v' | error=%v", linen + 1, downloadURL, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid download URL: '%v' | error=%v", linen+1, downloadURL, err)
 					}
 				}
 			case "unzip":
@@ -90,7 +89,7 @@ func ValidateScript(script []string) error {
 					// Test the path for glob syntax errors
 					_, err := filepath.Glob(strings.ReplaceAll(rawFilepath, "$path", "."))
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for unzip: '%v' | error=%v", linen + 1, rawFilepath, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for unzip: '%v' | error=%v", linen+1, rawFilepath, err)
 					}
 				}
 			case "rm":
@@ -102,7 +101,7 @@ func ValidateScript(script []string) error {
 					// Test the path for glob syntax errors
 					_, err := filepath.Glob(strings.ReplaceAll(rawFilepath, "$path", "."))
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for rm: '%v' | error=%v", linen + 1, rawFilepath, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for rm: '%v' | error=%v", linen+1, rawFilepath, err)
 					}
 				}
 			case "rsynca":
@@ -112,7 +111,7 @@ func ValidateScript(script []string) error {
 					}
 
 					if strings.Count(rawFilepaths, "|") != 1 {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid argument for rsynca: '%v', exactly two parts (separated by a '|' character) are required", rawFilepaths, linen + 1)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid argument for rsynca: '%v', exactly two parts (separated by a '|' character) are required", rawFilepaths, linen+1)
 					}
 
 					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
@@ -121,13 +120,13 @@ func ValidateScript(script []string) error {
 					// Test the path for glob syntax errors
 					_, err := filepath.Glob(strings.ReplaceAll(rawFilepathSource, "$path", "."))
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for rsynca: '%v' | error=%v", linen + 1, rawFilepathSource, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for rsynca: '%v' | error=%v", linen+1, rawFilepathSource, err)
 					}
 
 					// Test the path for glob syntax errors
 					_, err = filepath.Glob(strings.ReplaceAll(rawFilepathDestination, "$path", "."))
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for rsynca: '%v' | error=%v", linen + 1, rawFilepathDestination, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for rsynca: '%v' | error=%v", linen+1, rawFilepathDestination, err)
 					}
 				}
 			case "mv":
@@ -137,7 +136,7 @@ func ValidateScript(script []string) error {
 					}
 
 					if strings.Count(rawFilepaths, "|") != 1 {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid argument for mv: '%v', exactly two parts (separated by a '|' character) are required", rawFilepaths, linen + 1)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid argument for mv: '%v', exactly two parts (separated by a '|' character) are required", rawFilepaths, linen+1)
 					}
 
 					rawFilepathSource := strings.Split(rawFilepaths, "|")[0]
@@ -146,17 +145,17 @@ func ValidateScript(script []string) error {
 					// Test the path for glob syntax errors
 					_, err := filepath.Glob(strings.ReplaceAll(rawFilepathSource, "$path", "."))
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for mv: '%v' | error=%v", linen + 1, rawFilepathSource, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for mv: '%v' | error=%v", linen+1, rawFilepathSource, err)
 					}
 
 					// Test the path for glob syntax errors
 					_, err = filepath.Glob(strings.ReplaceAll(rawFilepathDestination, "$path", "."))
 					if err != nil {
-						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for mv: '%v' | error=%v", linen + 1, rawFilepathDestination, err)
+						return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid glob path argument for mv: '%v' | error=%v", linen+1, rawFilepathDestination, err)
 					}
 				}
 			default:
-				return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid command", linen + 1)
+				return fmt.Errorf("Validate: Game install script is invalid: (%v) Invalid command", linen+1)
 			}
 		}
 	}
